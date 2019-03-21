@@ -1,0 +1,117 @@
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+findAnalyses <- function(results) {
+  analyses <- unique(results[c('ANALYSIS_ID', 'ANALYSIS_NAME', 'TYPE')])
+
+  return(analyses)
+}
+
+findStratas <- function(results) {
+  stratas <- unique(results[c('STRATA_ID', 'STRATA_NAME')])
+  return(stratas)
+}
+
+getCohort <- function(id, cc) {
+  cohorts <- cc$cohorts
+  r <- NULL
+  for(i in 1:length(cohorts)) {
+    cohort = cohorts[i,]
+    if (cohort$id == id) {
+      r = cohort
+      break
+    }
+  }
+  return(r)
+}
+
+findCohorts <- function(cc, results) {
+  cohortIds <- unique(results[c('COHORT_DEFINITION_ID')])
+  cohortNames <- ""[-1]
+
+  for(i in 1:nrow(cohortIds)) {
+    cohort <- getCohort(cohortIds[i,c('COHORT_DEFINITION_ID')], cc)
+    if (!is.null(cohort)) {
+      name = cohort$name
+      cohortNames <- c(cohortNames, name)
+    }
+  }
+  cohorts <- data.frame(id = cohortIds, name = cohortNames)
+  return(cohorts)
+}
+
+getColumnNames <- function(type) {
+
+  colNames <- c('ANALYSIS_NAME', 'STRATA_NAME', 'COUNT_VALUE', 'AVG_VALUE')
+  if (type == 'DISTRIBUTION') {
+    colNames <- c(colNames, 'MIN_VALUE', 'P10_VALUE', 'P25_VALUE', 'MEDIAN_VALUE', 'P75_VALUE', 'P90_VALUE')
+  }
+  return(colNames)
+}
+
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+buildReports <- function(analysis, cohorts, stratas, results, outputFolder) {
+  colNames <- getColumnNames(analysis[c('TYPE')])
+
+  for(i in 1:length(cohorts)) {
+    cohort <- cohorts[i,]
+    analysisId <- trim(analysis[c('ANALYSIS_ID')])
+    analysisName <- analysis[c('ANALYSIS_NAME')]
+    cohortId <- trim(cohort$COHORT_DEFINITION_ID)
+    ParallelLogger::logInfo(paste('Building report for analysis "', analysisName, ' ', analysisId, '" at cohort "', cohort$name, '"', sep = ''))
+    reportData <- results[which(results$ANALYSIS_ID == analysisId & results$COHORT_DEFINITION_ID == cohortId), colNames]
+
+    reportData[, 'COHORT_NAME'] <- cohort$name
+
+    fileName <- paste(analysisName, '_', cohort$name, '.csv', sep = '')
+    rows <- sum(complete.cases(reportData))
+    ParallelLogger::logInfo(paste('Found ',rows,' rows', sep = ''))
+    write.csv(reportData, file.path(outputFolder, fileName), row.names = TRUE)
+  }
+}
+
+#'
+#' @export
+saveResults <- function(connectionDetails, cohortCharacterization, analysisId, resultsSchema, outputFolder, tresholdLevel = 0.01) {
+
+  library(jsonlite)
+  if (!file.exists(outputFolder))
+    dir.create(outputFolder, recursive = TRUE)
+
+  con <- DatabaseConnector::connect(connectionDetails)
+
+  ParallelLogger::logInfo("Gathering results from source")
+  sql <- SqlRender::loadRenderTranslateSql(sqlFilename = "queryResults.sql",
+    packageName = "SkeletonCohortCharacterization",
+    dbms = attr(con, "dbms"),
+    results_database_schema = resultsSchema,
+    cohort_characterization_generation_id = analysisId,
+    threshold_level = tresholdLevel)
+
+  results <- DatabaseConnector::querySql(con, sql)
+  results[which(results$STRATA_ID == 0), 'STRATA_NAME'] <- 'All stratas'
+
+  fileName <- file.path(outputFolder, "raw_data.csv")
+  ParallelLogger::logInfo(paste("Raw data is available at ", fileName))
+  write.csv(results, fileName, row.names = TRUE)
+
+  cc <- fromJSON(cohortCharacterization)
+
+  analyses <- findAnalyses(results)
+  cohorts <- findCohorts(cc, results)
+  stratas <- findStratas(results)
+
+  apply(analyses, 1, buildReports, cohorts, stratas, results, outputFolder)
+
+  # for(analysis in analyses) {
+  #   print(analysis)
+  #   buildReports(analysis, cohorts, stratas, results, outputFolder)
+  # }
+
+  DatabaseConnector::disconnect(con)
+}
