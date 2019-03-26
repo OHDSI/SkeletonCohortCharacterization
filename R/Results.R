@@ -1,4 +1,4 @@
-#
+# 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -75,6 +75,17 @@ buildReports <- function(analysis, cohorts, stratas, results, outputFolder) {
   }
 }
 
+#' Save results of analyses from database to CSV files.
+#'
+#' @param connectionDetails An object of type \code{connectionDetails} as created using the
+#'                             \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
+#'                             DatabaseConnector package.
+#' @param cohortCharacterization A string object containing valid JSON that represents CC design
+#' @param analysisId analysis identifier
+#' @param resultsSchema the name of schema where results would be placed
+#' @param outputFolder folder name where results would be saved
+#' @param tresholdLevel treshold level is used for prevalence analyses to reduce meaningless records having percentage lower than 
+#'                      treshold level. Default value is 0.01
 #'
 #' @export
 saveResults <- function(connectionDetails, cohortCharacterization, analysisId, resultsSchema, outputFolder, tresholdLevel = 0.01) {

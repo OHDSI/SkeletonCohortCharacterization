@@ -5,19 +5,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#' Run CohortCharacterization method
+#' Builds query, run analyses and save results to the result folder.
 #' 
-#' @details 
-#' 
-#' @param connectionDetails
-#' @param cohortCharacterization
-#' @param cohortTable
-#' @param sessionId
-#' @param cdmSchema
-#' @param resultsSchema
-#' @param vocabularySchema
-#' @param tempSchema
-#' @param analysisId
+#' @param connectionDetails An object of type \code{connectionDetails} as created using the
+#'                             \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
+#'                             DatabaseConnector package.
+#' @param cohortCharacterization A string object containing valid JSON that represents CC design
+#' @param cohortTable The name of table with cohorts
+#' @param sessionId session identifier using to build temporary tables
+#' @param cdmSchema the name of schema containing data in CDM format
+#' @param resultsSchema the name of schema where results would be placed
+#' @param vocabularySchema the name of schema with vocabularies
+#' @param tempSchema the name of database temp schema
+#' @param analysisId analysis identifier
 #' 
 #' @export
 runAnalysis <- function(connectionDetails,
