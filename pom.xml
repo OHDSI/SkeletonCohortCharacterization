@@ -41,9 +41,9 @@
     </build>
     <name>cohortCharacterization</name>
     <scm>
-        <connection>scm:git:https://github.com/OHDSI/cohortCharacterization</connection>
-        <developerConnection>scm:git:https://github.com/OHDSI/cohortCharacterization</developerConnection>
-        <url>https://github.com/OHDSI/cohortCharacterization</url>
+        <connection>scm:git:https://github.com/OHDSI/SkeletonCohortCharacterization</connection>
+        <developerConnection>scm:git:https://github.com/OHDSI/SkeletonCohortCharacterization</developerConnection>
+        <url>https://github.com/OHDSI/SkeletonCohortCharacterization</url>
         <tag>HEAD</tag>
     </scm>
     <properties>

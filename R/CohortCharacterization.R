@@ -10,7 +10,6 @@
 #' @param connectionDetails An object of type \code{connectionDetails} as created using the
 #'                             \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 #'                             DatabaseConnector package.
-#' @param cohortCharacterization A string object containing valid JSON that represents CC design
 #' @param cohortTable The name of table with cohorts
 #' @param sessionId session identifier using to build temporary tables
 #' @param cdmSchema the name of schema containing data in CDM format
@@ -21,7 +20,6 @@
 #' 
 #' @export
 runAnalysis <- function(connectionDetails,
-                  cohortCharacterization,
                   cohortTable = "cohort",
                   sessionId,
                   cdmSchema,
@@ -29,11 +27,14 @@ runAnalysis <- function(connectionDetails,
                   vocabularySchema,
                   tempSchema = resultsSchema,
                   analysisId,
-                  outputFolder = "SkeletonCohortCharacterizationStudy"
+                  outputFolder = "SkeletonCohortCharacterization"
 ) {
   if (!file.exists(outputFolder))
     dir.create(outputFolder, recursive = TRUE)
   ParallelLogger::addDefaultFileLogger(file.path(outputFolder, "log.txt"))
+
+  filename <- system.file("settings", "StudySpecification.json", package = "SkeletonCohortCharacterization")
+  cohortCharacterization <- read_file(filename)
 
   ParallelLogger::logInfo("Building Cohort Characterization queries to run")
   sql <- buildQuery(cohortCharacterization, cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, analysisId)

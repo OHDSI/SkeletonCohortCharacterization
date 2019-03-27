@@ -1,0 +1,18 @@
+{
+	"skeletonType": "CohortCharacterizationStudy",
+	"skeletonVersion": "v0.0.1",
+	"requiredHydraVersion": "v0.0.1",
+	"actions":[{
+		"type": "fileNameFindAndReplace",
+		"input": "packageName",
+		"find": "SkeletonCohortCharacterization"
+	},{
+		"type": "stringFindAndReplace",
+		"input": "packageName",
+		"find": "SkeletonCohortCharacterization"
+	},{
+		"type": "jsonToJson",
+		"input": "",
+		"output": "inst/settings/StudySpecification.json"
+	}]
+}
