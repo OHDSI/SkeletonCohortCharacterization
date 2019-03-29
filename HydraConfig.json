@@ -9,7 +9,8 @@
 	},{
 		"type": "stringFindAndReplace",
 		"input": "packageName",
-		"find": "SkeletonCohortCharacterization"
+		"find": "SkeletonCohortCharacterization",
+		"exclude": "**/*.jar"
 	},{
 		"type": "jsonToJson",
 		"input": "",
