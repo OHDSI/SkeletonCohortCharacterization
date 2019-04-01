@@ -1,0 +1,15 @@
+^Meta$
+^doc$
+^.*\.Rproj$
+^\.Rproj\.user$
+extras
+^\.Rprofile$
+documents
+readme.md
+studyReadme.md
+src
+inst/java/classes
+inst/java/generated-sources
+inst/java/maven-archiver
+inst/java/maven-status
+
