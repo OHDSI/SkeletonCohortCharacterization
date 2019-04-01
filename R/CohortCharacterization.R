@@ -39,11 +39,14 @@ runAnalysis <- function(connectionDetails,
   ParallelLogger::logInfo("Building Cohort Characterization queries to run")
   sql <- buildQuery(cohortCharacterization, cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, analysisId)
   dbms <- connectionDetails$dbms
+  ParallelLogger::logInfo(paste("Translate SQL for", dbms))
   translatedSql <- SqlRender::translate(sql, dbms, tempSchema)
+
+  writeLines(sql, paste0("/tmp/sql-cc-", dbms, "-", analysisId, ".sql"))
 
   ParallelLogger::logInfo("Running analysis")
   con <- DatabaseConnector::connect(connectionDetails)
-  DatabaseConnector::executeSql(con, translatedSql)
+  DatabaseConnector::batchUpdate(con, translatedSql)
   DatabaseConnector::disconnect(con)
 
   ParallelLogger::logInfo("Collecting results")
