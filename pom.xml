@@ -83,6 +83,28 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>odysseus.community.snapshots</id>
+            <name>Odysseus community snapshots</name>
+            <url>http://repo.odysseusinc.com/artifactory/community-libs-snapshot-local</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>odysseus.community.releases</id>
+            <name>Odysseus community releases</name>
+            <url>http://repo.odysseusinc.com/artifactory/community-libs-release-local</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <dependencies>
