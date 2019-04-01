@@ -258,7 +258,7 @@ public class CCQueryBuilder {
 			throw new IllegalArgumentException(String.format("Stat type %s is not supported", analysis.getStatType()));
 		}
 		Long strataId = Objects.nonNull(strata) ? strata.getId() : 0L;
-		String strataName = Objects.nonNull(strata) ? strata.getName() : null;
+		String strataName = Objects.nonNull(strata) ? strata.getName() : "";
 		Collection<String> paramValues = Lists.newArrayList(String.valueOf(cohortDefinitionId), String.valueOf(jobId), String.valueOf(analysis.getId()),
 						analysis.getName(), feature.getName(), String.valueOf(conceptId),
 						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), strataName);
