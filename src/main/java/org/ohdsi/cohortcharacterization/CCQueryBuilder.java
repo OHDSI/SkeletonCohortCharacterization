@@ -433,7 +433,8 @@ public class CCQueryBuilder {
 
 	private String buildSettings() {
 
-		final JSONObject defaultSettings = new JSONObject(FeatureExtraction.createDefaultCovariateSettings());
+		final JSONObject defaultSettings = new JSONObject(FeatureExtraction.getDefaultPrespecAnalyses());
+		FeatureExtraction.getNameToPrespecAnalysis().keySet().forEach(defaultSettings::remove);
 
 		cohortCharacterization.getParameters().forEach(param -> defaultSettings.put(param.getName(), param.getValue()));
 		cohortCharacterization.getFeatureAnalyses()
