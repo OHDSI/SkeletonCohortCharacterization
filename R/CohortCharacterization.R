@@ -46,7 +46,7 @@ runAnalysis <- function(connectionDetails,
 
   ParallelLogger::logInfo("Running analysis")
   con <- DatabaseConnector::connect(connectionDetails)
-  DatabaseConnector::batchUpdate(con, translatedSql)
+  DatabaseConnector::executeSql(con, translatedSql, runAsBatch = TRUE)
   DatabaseConnector::disconnect(con)
 
   ParallelLogger::logInfo("Collecting results")

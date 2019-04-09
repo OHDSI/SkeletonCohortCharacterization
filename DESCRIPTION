@@ -10,7 +10,8 @@ License: Apache License 2.0
 VignetteBuilder: knitr
 URL: https://github.com/OHDSI/SkeletonCohortCharacterization
 BugReports: https://github.com/OHDSI/SkeletonCohortCharacterization/issues
-Depends: R (>= 3.2.2), DatabaseConnector(>= 2.2.0), SqlRender(>= 1.6.0), rJava(>= 0.9-10), jsonlite(>= 1.6), readr(>= 1.3.1)
+Depends: R (>= 3.2.2), DatabaseConnector(>= 2.2.0), SqlRender(>= 1.6.0), rJava(>= 0.9-10), jsonlite(>= 1.6), readr(>= 1.3.1),
+    FeatureExtraction(>= 2.2.2)
 NeedsCompilation: yes
 LazyData: TRUE
 RoxygenNote: 6.1.1
