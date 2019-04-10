@@ -27,9 +27,9 @@ public class DistributionFeatureDeserializer extends StdDeserializer<Distributio
 
 		String type = JsonUtils.getValueAsString(node, "criteriaType");
 		Class<? extends DistributionFeatureImpl> resultType = null;
-		if (Objects.equals(type, "WINDOWED_CRITERIA")) {
+		if (Objects.equals(type, "WindowedCriteria")) {
 			resultType = WindowedCriteriaFeatureImpl.class;
-		} else if (Objects.equals(type, "DEMOGRAPHIC_CRITERIA")) {
+		} else if (Objects.equals(type, "DemographicCriteria")) {
 			resultType = DemographicCriteriaFeatureImpl.class;
 		}
 

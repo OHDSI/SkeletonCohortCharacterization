@@ -14,7 +14,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
@@ -85,8 +84,6 @@ public class CCQueryBuilder {
 	private String tempSchema;
 	private Long jobId;
 
-	private List<String> allPresetAnalyses;
-
 	private final CohortExpressionQueryBuilder queryBuilder;
 
 	public CCQueryBuilder(String design, String cohortTable, String sessionId, String cdmSchema, String resultsSchema, String vocabularySchema, String tempSchema, long jobId) {
@@ -95,10 +92,6 @@ public class CCQueryBuilder {
 	}
 
 	public CCQueryBuilder(CohortCharacterization cohortCharacterization, String cohortTable, String sessionId, String cdmSchema, String resultsSchema, String vocabularySchema, String tempSchema, Long jobId) {
-		this(cohortCharacterization, cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, jobId, null);
-	}
-
-	public CCQueryBuilder(CohortCharacterization cohortCharacterization, String cohortTable, String sessionId, String cdmSchema, String resultsSchema, String vocabularySchema, String tempSchema, Long jobId, List<String> allPresetAnalyses) {
 		this.cohortCharacterization = cohortCharacterization;
 		this.cohortTable = cohortTable;
 		this.sessionId = sessionId;
@@ -107,7 +100,6 @@ public class CCQueryBuilder {
 		this.vocabularySchema = vocabularySchema;
 		this.tempSchema = tempSchema;
 		this.jobId = jobId;
-		this.allPresetAnalyses = Optional.ofNullable(allPresetAnalyses).orElse(new ArrayList<>());
 		this.queryBuilder = new CohortExpressionQueryBuilder();
 	}
 
@@ -442,8 +434,7 @@ public class CCQueryBuilder {
 	private String buildSettings() {
 
 		final JSONObject defaultSettings = new JSONObject(FeatureExtraction.getDefaultPrespecAnalyses());
-
-		allPresetAnalyses.forEach(defaultSettings::remove);
+		FeatureExtraction.getNameToPrespecAnalysis().keySet().forEach(defaultSettings::remove);
 
 		cohortCharacterization.getParameters().forEach(param -> defaultSettings.put(param.getName(), param.getValue()));
 		cohortCharacterization.getFeatureAnalyses()
