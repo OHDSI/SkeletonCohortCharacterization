@@ -41,8 +41,8 @@ buildQuery <- function(cohortCharacterization,
 ) {
 
   id <- .jlong(analysisId)
-  queryBuilder <- .jnew("org.ohdsi.cohortcharacterization.CCQueryBuilder", cohortCharacterization, cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, id)
-  sql <- .jcall(queryBuilder, returnSig = "S", "build")
+  queryBuilder <- new(J("org.ohdsi.cohortcharacterization.CCQueryBuilder"), cohortCharacterization, cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, id)
+  sql <- queryBuilder$build()
   return(sql)
 }
 

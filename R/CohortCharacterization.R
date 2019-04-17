@@ -50,7 +50,7 @@ runAnalysis <- function(connectionDetails,
   DatabaseConnector::disconnect(con)
 
   ParallelLogger::logInfo("Collecting results")
-  saveResults(connectionDetails, cohortCharacterization, analysisId, resultsSchema, paste(outputFolder, "/results"))
+  saveResults(connectionDetails, cohortCharacterization, analysisId, resultsSchema, outputFolder)
 
   invisible(NULL)
 }
