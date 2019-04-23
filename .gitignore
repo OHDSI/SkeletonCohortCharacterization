@@ -1,3 +1,5 @@
+.idea
+*.iml
 Meta
 doc
 inst/doc
