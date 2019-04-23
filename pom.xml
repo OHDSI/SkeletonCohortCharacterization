@@ -35,6 +35,7 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <excludeClassifiers>test</excludeClassifiers>
+                            <excludeArtifactIds>SqlRender,featureExtraction,hamcrest,hamcrest-core,junit</excludeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -101,13 +102,18 @@
         </dependency>
         <dependency>
             <groupId>org.ohdsi</groupId>
-            <artifactId>standardized-analysis-api</artifactId>
+            <artifactId>standardized-analysis-specs</artifactId>
+            <version>1.2.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ohdsi</groupId>
+            <artifactId>standardized-analysis-utils</artifactId>
             <version>1.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.ohdsi</groupId>
             <artifactId>circe</artifactId>
-            <version>1.7.3</version>
+            <version>1.8.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.ohdsi</groupId>
