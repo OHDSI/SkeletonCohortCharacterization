@@ -4,17 +4,14 @@
 \alias{runAnalysis}
 \title{Builds query, run analyses and save results to the result folder.}
 \usage{
-runAnalysis(connectionDetails, cohortCharacterization,
-  cohortTable = "cohort", sessionId, cdmSchema, resultsSchema,
-  vocabularySchema, tempSchema = resultsSchema, analysisId,
-  outputFolder = "SkeletonCohortCharacterizationStudy")
+runAnalysis(connectionDetails, cohortTable = "cohort", sessionId,
+  cdmSchema, resultsSchema, vocabularySchema, tempSchema = resultsSchema,
+  analysisId, outputFolder = "SkeletonCohortCharacterization")
 }
 \arguments{
 \item{connectionDetails}{An object of type \code{connectionDetails} as created using the
 \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 DatabaseConnector package.}
-
-\item{cohortCharacterization}{A string object containing valid JSON that represents CC design}
 
 \item{cohortTable}{The name of table with cohorts}
 

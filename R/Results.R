@@ -20,7 +20,7 @@ getCohort <- function(id, cc) {
   cohorts <- cc$cohorts
   r <- NULL
   for(i in 1:length(cohorts)) {
-    cohort = cohorts[i,]
+    cohort = cohorts[[i]]
     if (cohort$id == id) {
       r = cohort
       break
@@ -44,11 +44,16 @@ findCohorts <- function(cc, results) {
   return(cohorts)
 }
 
-getColumnNames <- function(type) {
+getColumnNames <- function(type, results) {
 
-  colNames <- c('ANALYSIS_NAME', 'STRATA_NAME', 'COUNT_VALUE', 'AVG_VALUE')
-  if (type == 'DISTRIBUTION') {
-    colNames <- c(colNames, 'MIN_VALUE', 'P10_VALUE', 'P25_VALUE', 'MEDIAN_VALUE', 'P75_VALUE', 'P90_VALUE')
+  blacklist <- "cc_generation_id"
+  distCols <- c('MIN_VALUE', 'P10_VALUE', 'P25_VALUE', 'MEDIAN_VALUE', 'P75_VALUE', 'P90_VALUE', 'MAX_VALUE', 'STDEV_VALUE')
+
+  colNames <- colnames(results)
+  colNames <- colNames[! colNames %in% blacklist]
+
+  if (type != 'DISTRIBUTION') {
+    colNames <- colNames[! colNames %in% distCols]
   }
   return(colNames)
 }
@@ -56,7 +61,7 @@ getColumnNames <- function(type) {
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
 buildReports <- function(analysis, cohorts, stratas, results, outputFolder) {
-  colNames <- getColumnNames(analysis[c('TYPE')])
+  colNames <- getColumnNames(analysis[c('TYPE')], results)
 
   for(i in 1:length(cohorts)) {
     cohort <- cohorts[i,]
@@ -66,10 +71,12 @@ buildReports <- function(analysis, cohorts, stratas, results, outputFolder) {
     ParallelLogger::logInfo(paste('Building report for analysis "', analysisName, ' ', analysisId, '" at cohort "', cohort$name, '"', sep = ''))
     reportData <- results[which(results$ANALYSIS_ID == analysisId & results$COHORT_DEFINITION_ID == cohortId), colNames]
 
-    reportData[, 'COHORT_NAME'] <- cohort$name
+    rows <- nrow(reportData)
+    if (rows > 0) {
+      reportData[, 'COHORT_NAME'] <- cohort$name
+    }
 
     fileName <- paste(analysisName, '_', cohort$name, '.csv', sep = '')
-    rows <- sum(complete.cases(reportData))
     ParallelLogger::logInfo(paste('Found ',rows,' rows', sep = ''))
     write.csv(reportData, file.path(outputFolder, fileName), row.names = TRUE)
   }
@@ -105,7 +112,10 @@ saveResults <- function(connectionDetails, cohortCharacterization, analysisId, r
     threshold_level = tresholdLevel)
 
   results <- DatabaseConnector::querySql(con, sql)
-  results[which(results$STRATA_ID == 0), 'STRATA_NAME'] <- 'All stratas'
+
+  if (nrow(results) > 0) {
+    results[which(results$STRATA_ID == 0), 'STRATA_NAME'] <- 'All stratas'
+  }
 
   fileName <- file.path(outputFolder, "raw_data.csv")
   ParallelLogger::logInfo(paste("Raw data is available at ", fileName))
