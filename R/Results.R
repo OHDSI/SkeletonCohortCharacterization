@@ -20,7 +20,7 @@ getCohort <- function(id, cc) {
   cohorts <- cc$cohorts
   r <- NULL
   for(i in 1:length(cohorts)) {
-    cohort = cohorts[i,]
+    cohort = cohorts[[i]]
     if (cohort$id == id) {
       r = cohort
       break

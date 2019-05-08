@@ -46,6 +46,10 @@ runAnalysis <- function(connectionDetails,
 
   ParallelLogger::logInfo("Running analysis")
   con <- DatabaseConnector::connect(connectionDetails)
+  sql <- SqlRender::render("DELETE FROM @results_database_schema.cc_results WHERE cc_generation_id = @analysis_id", 
+                           results_database_schema = resultsSchema, analysis_id = analysisId)
+  deleteSql <- SqlRender::translate(sql, dbms, tempSchema)
+  DatabaseConnector::executeSql(con, deleteSql)
   DatabaseConnector::executeSql(con, translatedSql, runAsBatch = TRUE)
   DatabaseConnector::disconnect(con)
 
