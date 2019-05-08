@@ -120,3 +120,20 @@ createCohorts <- function(pckg, connectionDetails, cdmSchema, vocabularySchema, 
 
   return(cohortTable)
 }
+
+#' Drops cohort table
+#' 
+#' @param connectionDetails An object of type \code{connectionDetails} as created using the
+#'                             \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
+#'                             DatabaseConnector package.
+#' @param resultsSchema The name of schema where cohort table will be placed
+#' @param targetTable The name of cohort table
+#' @export
+cleanupCohortTable <- function(connectionDetails, resultSchema, cohortTable) {
+  sql <- "IF OBJECT_ID('@cohort_database_schema.@cohort_table', 'U') IS NOT NULL DROP TABLE @cohort_database_schema.@cohort_table;"
+  sql <- SqlRender::render(sql, cohort_database_schema = resultSchema, cohort_table = cohortTable)
+  sql <- SqlRender::translate(sql, connectionDetails$dbms)
+  con <- DatabaseConnector::connect(connectionDetails)
+  DatabaseConnector::executeSql(con, sql, runAsBatch = TRUE)
+  DatabaseConnector::disconnect(con)
+}
