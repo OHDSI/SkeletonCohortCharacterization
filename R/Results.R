@@ -66,12 +66,12 @@ buildReports <- function(analysis, cohorts, stratas, results, outputFolder) {
     ParallelLogger::logInfo(paste('Building report for analysis "', analysisName, ' ', analysisId, '" at cohort "', cohort$name, '"', sep = ''))
     reportData <- results[which(results$ANALYSIS_ID == analysisId & results$COHORT_DEFINITION_ID == cohortId), colNames]
 
-    if (nrow(reportData) > 0) {
+    rows <- nrow(reportData)
+    if (rows > 0) {
       reportData[, 'COHORT_NAME'] <- cohort$name
     }
 
     fileName <- paste(analysisName, '_', cohort$name, '.csv', sep = '')
-    rows <- sum(complete.cases(reportData))
     ParallelLogger::logInfo(paste('Found ',rows,' rows', sep = ''))
     write.csv(reportData, file.path(outputFolder, fileName), row.names = TRUE)
   }
