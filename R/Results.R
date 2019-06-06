@@ -19,11 +19,13 @@ findStratas <- function(results) {
 getCohort <- function(id, cc) {
   cohorts <- cc$cohorts
   r <- NULL
-  for(i in 1:length(cohorts)) {
-    cohort = cohorts[[i]]
-    if (cohort$id == id) {
-      r = cohort
-      break
+  if (!is.na(id) && length(id) != 0) {
+    for(i in 1:length(cohorts)) {
+      cohort = cohorts[[i]]
+      if (cohort$id == id) {
+        r = cohort
+        break
+      }
     }
   }
   return(r)
@@ -52,7 +54,7 @@ getColumnNames <- function(type, results) {
   colNames <- colnames(results)
   colNames <- colNames[! colNames %in% blacklist]
 
-  if (type != 'DISTRIBUTION') {
+  if (!is.na(type) && type != 'DISTRIBUTION') {
     colNames <- colNames[! colNames %in% distCols]
   }
   return(colNames)
