@@ -38,6 +38,7 @@ import org.ohdsi.circe.cohortdefinition.DemographicCriteria;
 import org.ohdsi.circe.cohortdefinition.WindowedCriteria;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.cohortcharacterization.design.CohortCharacterizationImpl;
+import org.ohdsi.cohortcharacterization.utils.QuoteUtils;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -141,7 +142,7 @@ public class CCQueryBuilder {
 						.filter(v -> Objects.equals(v.getStatType(), CcResultType.DISTRIBUTION))
 						.flatMap(v -> prepareStatements(customDistributionQueryWrapper, sessionId,
 										ArrayUtils.addAll(CUSTOM_PARAMETERS, "strataId", "strataName"),
-										new String[] { String.valueOf(v.getId()), v.getName(), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId), "0", "" }).stream())
+										new String[] { String.valueOf(v.getId()), QuoteUtils.escapeSql(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId), "0", "" }).stream())
 						.collect(Collectors.toList());
 	}
 
@@ -153,7 +154,7 @@ public class CCQueryBuilder {
 						.filter(v -> v.getStatType() == CcResultType.PREVALENCE)
 						.flatMap(v -> prepareStatements(customPrevalenceQueryWrapper, sessionId,
 										ArrayUtils.addAll(CUSTOM_PARAMETERS, "strataId", "strataName"),
-										new String[] { String.valueOf(v.getId()), v.getName(), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId), "0", "" }).stream())
+										new String[] { String.valueOf(v.getId()), QuoteUtils.escapeSql(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId), "0", "" }).stream())
 						.collect(Collectors.toList());
 	}
 
