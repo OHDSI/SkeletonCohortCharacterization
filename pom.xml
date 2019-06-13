@@ -123,7 +123,7 @@
         </dependency>
         <dependency>
             <groupId>com.odysseusinc.arachne</groupId>
-            <artifactId>common-utils</artifactId>
+            <artifactId>arachne-common-utils</artifactId>
             <version>${arachne.version}</version>
         </dependency>
         <dependency>
