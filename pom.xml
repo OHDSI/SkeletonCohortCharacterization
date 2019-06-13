@@ -53,6 +53,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <src.dir>java</src.dir>
         <test.dir>test</test.dir>
+        <arachne.version>1.15.0-SNAPSHOT</arachne.version>
     </properties>
     <distributionManagement>
         <repository>
@@ -119,6 +120,11 @@
             <groupId>org.ohdsi</groupId>
             <artifactId>featureExtraction</artifactId>
             <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.odysseusinc.arachne</groupId>
+            <artifactId>common-utils</artifactId>
+            <version>${arachne.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
