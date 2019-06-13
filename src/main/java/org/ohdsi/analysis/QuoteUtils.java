@@ -1,4 +1,4 @@
-package org.ohdsi.cohortcharacterization.utils;
+package org.ohdsi.analysis;
 
 import java.util.Objects;
 

@@ -38,7 +38,7 @@ import org.ohdsi.circe.cohortdefinition.DemographicCriteria;
 import org.ohdsi.circe.cohortdefinition.WindowedCriteria;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.cohortcharacterization.design.CohortCharacterizationImpl;
-import org.ohdsi.cohortcharacterization.utils.QuoteUtils;
+import org.ohdsi.analysis.QuoteUtils;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
