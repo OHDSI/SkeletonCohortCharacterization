@@ -55,7 +55,7 @@ with
   )
 select
   CAST('DISTRIBUTION' AS VARCHAR(255)) as type,
-  CAST('CRITERIA' AS VARCHAR(255)) as fa_type,
+  CAST('CRITERIA_SET' AS VARCHAR(255)) as fa_type,
   CAST(@covariateId AS BIGINT) as covariate_id,
   CAST('@covariateName' AS VARCHAR(1000)) as covariate_name,
   CAST(@analysisId AS INT) as analysis_id,
