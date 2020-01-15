@@ -1,7 +1,7 @@
 Package: SkeletonCohortCharacterization
 Type: Package
 Title: Assembles SQL to running Cohort Characterization reports
-Version: 0.0.1
+Version: 1.1.0
 Date: 2019-03-18
 Author: Vitaly Koulakov
 Mainteiner: Vitaly Koulakov <vitaly.koulakov@odysseusinc.com>
