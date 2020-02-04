@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
@@ -21,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.WithId;
+import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
 import org.ohdsi.analysis.cohortcharacterization.design.BaseCriteriaFeature;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
@@ -29,6 +31,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationSt
 import org.ohdsi.analysis.cohortcharacterization.design.CriteriaFeature;
 import org.ohdsi.analysis.cohortcharacterization.design.DemographicCriteriaFeature;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisWithCriteria;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.analysis.cohortcharacterization.design.WindowedCriteriaFeature;
@@ -54,7 +57,7 @@ public class CCQueryBuilder {
 
 	private static final String COHORT_STRATA_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/strataWithCriteria.sql");
 
-	private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "targetTable", "totalsTable" };
+	private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "targetTable", "totalsTable", "aggregateQuery", "valueExpression", "useAggregatedValue" };
 	private static final String[] STRATA_REGEXES = new String[] { "strataQuery", "targetTable", "strataCohortTable", "eventsTable" };
 
 	private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
@@ -255,13 +258,51 @@ public class CCQueryBuilder {
 		Collection<String> paramValues = Lists.newArrayList(String.valueOf(cohortDefinitionId), String.valueOf(jobId), String.valueOf(analysis.getId()),
 						analysis.getName(), feature.getName(), String.valueOf(conceptId),
 						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), strataName);
-		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable };
+		String aggregateQuery = getAggregateQuery(analysis);
+		String valueExpression = getValueExpression(analysis);
+		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable, aggregateQuery, valueExpression,
+				String.valueOf(useAggregatedValue(analysis))};
 
 		return Arrays.stream(SqlSplit.splitSql(queryFile))
 						.map(COMPLETE_DOTCOMMA)
 						.flatMap(sql -> prepareStatements(sql, sessionId, ArrayUtils.addAll(CRITERIA_REGEXES, paramNames),
 										ArrayUtils.addAll(criteriaValues, paramValues.toArray(new String[0]))).stream())
 						.collect(Collectors.toList());
+	}
+
+	private String getAggregateQuery(FeatureAnalysis analysis) {
+
+		String tableName = "";
+		if (analysis instanceof FeatureAnalysisWithCriteria) {
+			FeatureAnalysisWithCriteria fa = (FeatureAnalysisWithCriteria) analysis;
+			tableName = fa.getAggregate().hasQuery() ? fa.getAggregate().getQuery() : "";
+		}
+		return tableName;
+	}
+
+	private String getValueExpression(FeatureAnalysis analysis) {
+
+		String expr = "count(*)";
+		if (analysis instanceof FeatureAnalysisWithCriteria) {
+			FeatureAnalysisWithCriteria fa = (FeatureAnalysisWithCriteria) analysis;
+			FeatureAnalysisAggregate aggregate = fa.getAggregate();
+			if (Objects.nonNull(aggregate)) {
+				Optional<AggregateFunction> aggregator = Optional.ofNullable(aggregate.getFunction());
+				expr = aggregator.map(a -> a.getName() + "(").orElse("") +
+						aggregate.getExpression() +
+						aggregator.map(a -> ")").orElse("");
+			}
+		}
+		return expr;
+	}
+
+	private boolean useAggregatedValue(FeatureAnalysis analysis) {
+
+		if (analysis instanceof FeatureAnalysisWithCriteria) {
+			FeatureAnalysisAggregate aggregate = ((FeatureAnalysisWithCriteria) analysis).getAggregate();
+			return Objects.isNull(aggregate) || Objects.nonNull(aggregate.getFunction());
+		}
+		return true;
 	}
 
 	private String getCriteriaGroupQuery(FeatureAnalysis analysis, BaseCriteriaFeature feature, String eventTable) {

@@ -1,3 +1,4 @@
+{DEFAULT @useAggregatedValue = TRUE}
 IF OBJECT_ID('tempdb..#events_count', 'U') IS NOT NULL
   DROP TABLE #events_count;
 
@@ -9,49 +10,51 @@ WITH qualified_events AS (
 )
 select
   v.person_id as person_id,
-  count(*) as value_as_int
+  @valueExpression as value_as_number
 into #events_count
 from ( @groupQuery ) v
-group by v.person_id;
+{@aggregateQuery != ""} ? {join qualified_events E on E.person_id = v.person_id @aggregateQuery}
+{@useAggregatedValue} ? {group by v.person_id}
+;
 
 with
   total_cohort_count AS (
     SELECT COUNT(*) cnt FROM @targetTable where cohort_definition_id = @cohortId
   ),
   events_max_value as (
-    select max(value_as_int) as max_value from #events_count
+    select max(value_as_number) as max_value from #events_count
   ),
   event_stat_values as (
     select
-      count(*) as count_value,
-      min(value_as_int) as min_value,
-      max(value_as_int) as max_value,
-      sum(value_as_int) as sum_value,
-      stdev(value_as_int) as stdev_value,
+      count(distinct person_id) as count_value,
+      min(value_as_number) as min_value,
+      max(value_as_number) as max_value,
+      sum(value_as_number) as sum_value,
+      stdev(value_as_number) as stdev_value,
       total_cohort_count.cnt - count(*) as count_no_value,
       total_cohort_count.cnt as population_size
     from #events_count, total_cohort_count
     group by total_cohort_count.cnt
   ),
-  event_prep as (select row_number() over (order by value_as_int) as rn, value_as_int, count(*) as people_count from #events_count group by value_as_int),
+  event_prep as (select row_number() over (order by value_as_number) as rn, value_as_number, count(*) as people_count from #events_count group by value_as_number),
   events_dist as (
-    select s.value_as_int, sum(p.people_count) as people_count
-    from event_prep s join event_prep p on p.rn <= s.rn group by s.value_as_int
+    select s.value_as_number, sum(p.people_count) as people_count
+    from event_prep s join event_prep p on p.rn <= s.rn group by s.value_as_number
   ),
   events_p10_value as (
-    select min(value_as_int) as p10 from events_dist, event_stat_values where (people_count + count_no_value) >= 0.1 * population_size
+    select min(value_as_number) as p10 from events_dist, event_stat_values where (people_count + count_no_value) >= 0.1 * population_size
   ),
   events_p25_value as (
-    select min(value_as_int) as p25 from events_dist, event_stat_values where (people_count + count_no_value) >= 0.25 * population_size
+    select min(value_as_number) as p25 from events_dist, event_stat_values where (people_count + count_no_value) >= 0.25 * population_size
   ),
   events_median_value as (
-      select min(value_as_int) as median_value from events_dist, event_stat_values where (people_count + count_no_value) >= 0.5 * population_size
+      select min(value_as_number) as median_value from events_dist, event_stat_values where (people_count + count_no_value) >= 0.5 * population_size
   ),
   events_p75_value as (
-    select min(value_as_int) as p75 from events_dist, event_stat_values where people_count + count_no_value >= 0.75 * population_size
+    select min(value_as_number) as p75 from events_dist, event_stat_values where people_count + count_no_value >= 0.75 * population_size
   ),
   events_p90_value as (
-    select min(value_as_int) as p90 from events_dist, event_stat_values where people_count + count_no_value >= 0.9 * population_size
+    select min(value_as_number) as p90 from events_dist, event_stat_values where people_count + count_no_value >= 0.9 * population_size
   )
 select
   CAST('DISTRIBUTION' AS VARCHAR(255)) as type,
