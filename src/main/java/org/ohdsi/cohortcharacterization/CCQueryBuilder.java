@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
@@ -122,7 +123,7 @@ public class CCQueryBuilder {
 
 	private String renderCustomAnalysisDesign(FeatureAnalysis fa, Integer cohortId, CohortCharacterizationStrata strata) {
 
-		String cohortTable = Objects.nonNull(strata) ? getStrataCohortTable(strata) : tempSchema + "." + this.cohortTable;
+		String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(tempSchema + "." + this.cohortTable);
 		Map<String, String> params = cohortCharacterization.getParameters().stream().collect(Collectors.toMap(CohortCharacterizationParam::getName, v -> v.getValue().toString()));
 		params.put("cdm_database_schema", cdmSchema);
 		params.put("cohort_table", cohortTable);
@@ -138,8 +139,8 @@ public class CCQueryBuilder {
 
 	private List<String> getQueriesForCustomDistributionAnalyses(final Integer cohortId, CohortCharacterizationStrata strata) {
 
-		Long strataId = Objects.nonNull(strata) ? strata.getId() : 0L;
-		String strataName = Objects.nonNull(strata) ? strata.getName() : "";
+		Long strataId = Optional.ofNullable(strata).map(CohortCharacterizationStrata::getId).orElse(0L);
+		String strataName = Optional.ofNullable(strata).map(CohortCharacterizationStrata::getName).orElse("");
 
 		return cohortCharacterization.getFeatureAnalyses()
 						.stream()
@@ -155,8 +156,8 @@ public class CCQueryBuilder {
 
 	private List<String> getQueriesForCustomPrevalenceAnalyses(final Integer cohortId, CohortCharacterizationStrata strata) {
 
-		Long strataId = Objects.nonNull(strata) ? strata.getId() : 0L;
-		String strataName = Objects.nonNull(strata) ? strata.getName() : "";
+		Long strataId = Optional.ofNullable(strata).map(CohortCharacterizationStrata::getId).orElse(0L);
+		String strataName = Optional.ofNullable(strata).map(CohortCharacterizationStrata::getName).orElse("");
 
 		return cohortCharacterization.getFeatureAnalyses()
 						.stream()
@@ -173,7 +174,7 @@ public class CCQueryBuilder {
 		List<String> queries = new ArrayList<>();
 		List<FeatureAnalysisWithCriteria<? extends BaseCriteriaFeature, Integer>> analysesWithCriteria = getFeAnalysesWithCriteria();
 		if (!analysesWithCriteria.isEmpty()) {
-			String cohortTable = Objects.nonNull(strata) ? getStrataCohortTable(strata) : tempSchema + "." + this.cohortTable;
+			String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(tempSchema + "." + this.cohortTable);
 			analysesWithCriteria.stream()
 							.map(analysis -> getCriteriaFeaturesQueries(cohortDefinitionId, analysis, cohortTable, strata))
 							.flatMap(Collection::stream)
