@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
@@ -120,10 +121,12 @@ public class CCQueryBuilder {
 		return getSqlQueriesToRun(createFeJsonObject(options, options.resultSchema + "." + cohortTable), cohortDefinitionId);
 	}
 
-	private String renderCustomAnalysisDesign(FeatureAnalysis fa, Integer cohortId) {
+	private String renderCustomAnalysisDesign(FeatureAnalysis fa, Integer cohortId, CohortCharacterizationStrata strata) {
+
+		String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(tempSchema + "." + this.cohortTable);
 		Map<String, String> params = cohortCharacterization.getParameters().stream().collect(Collectors.toMap(CohortCharacterizationParam::getName, v -> v.getValue().toString()));
 		params.put("cdm_database_schema", cdmSchema);
-		params.put("cohort_table", tempSchema + "." + cohortTable);
+		params.put("cohort_table", cohortTable);
 		params.put("cohort_id", cohortId.toString());
 		params.put("analysis_id", fa.getId().toString());
 
@@ -134,7 +137,10 @@ public class CCQueryBuilder {
 		);
 	}
 
-	private List<String> getQueriesForCustomDistributionAnalyses(final Integer cohortId) {
+	private List<String> getQueriesForCustomDistributionAnalyses(final Integer cohortId, CohortCharacterizationStrata strata) {
+
+		Long strataId = Optional.ofNullable(strata).map(CohortCharacterizationStrata::getId).orElse(0L);
+		String strataName = Optional.ofNullable(strata).map(CohortCharacterizationStrata::getName).orElse("");
 
 		return cohortCharacterization.getFeatureAnalyses()
 						.stream()
@@ -142,11 +148,16 @@ public class CCQueryBuilder {
 						.filter(v -> Objects.equals(v.getStatType(), CcResultType.DISTRIBUTION))
 						.flatMap(v -> prepareStatements(customDistributionQueryWrapper, sessionId,
 										ArrayUtils.addAll(CUSTOM_PARAMETERS, "strataId", "strataName"),
-										new String[] { String.valueOf(v.getId()), QuoteUtils.escapeSql(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId), "0", "" }).stream())
+										new String[] { String.valueOf(v.getId()), QuoteUtils.escapeSql(v.getName()),
+												String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId, strata),
+												String.valueOf(strataId), strataName }).stream())
 						.collect(Collectors.toList());
 	}
 
-	private List<String> getQueriesForCustomPrevalenceAnalyses(final Integer cohortId) {
+	private List<String> getQueriesForCustomPrevalenceAnalyses(final Integer cohortId, CohortCharacterizationStrata strata) {
+
+		Long strataId = Optional.ofNullable(strata).map(CohortCharacterizationStrata::getId).orElse(0L);
+		String strataName = Optional.ofNullable(strata).map(CohortCharacterizationStrata::getName).orElse("");
 
 		return cohortCharacterization.getFeatureAnalyses()
 						.stream()
@@ -154,7 +165,8 @@ public class CCQueryBuilder {
 						.filter(v -> v.getStatType() == CcResultType.PREVALENCE)
 						.flatMap(v -> prepareStatements(customPrevalenceQueryWrapper, sessionId,
 										ArrayUtils.addAll(CUSTOM_PARAMETERS, "strataId", "strataName"),
-										new String[] { String.valueOf(v.getId()), QuoteUtils.escapeSql(v.getName()), String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId), "0", "" }).stream())
+										new String[] { String.valueOf(v.getId()), QuoteUtils.escapeSql(v.getName()), String.valueOf(cohortId),
+												String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId, strata), String.valueOf(strataId), strataName }).stream())
 						.collect(Collectors.toList());
 	}
 
@@ -162,7 +174,7 @@ public class CCQueryBuilder {
 		List<String> queries = new ArrayList<>();
 		List<FeatureAnalysisWithCriteria<? extends BaseCriteriaFeature, Integer>> analysesWithCriteria = getFeAnalysesWithCriteria();
 		if (!analysesWithCriteria.isEmpty()) {
-			String cohortTable = Objects.nonNull(strata) ? getStrataCohortTable(strata) : tempSchema + "." + this.cohortTable;
+			String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(tempSchema + "." + this.cohortTable);
 			analysesWithCriteria.stream()
 							.map(analysis -> getCriteriaFeaturesQueries(cohortDefinitionId, analysis, cohortTable, strata))
 							.flatMap(Collection::stream)
@@ -418,8 +430,8 @@ public class CCQueryBuilder {
 
 		List<String> queriesToRun = new ArrayList<>();
 		queriesToRun.addAll(getQueriesForPresetAnalyses(jsonObject,cohortDefinitionId, strata));
-		queriesToRun.addAll(getQueriesForCustomDistributionAnalyses(cohortDefinitionId));
-		queriesToRun.addAll(getQueriesForCustomPrevalenceAnalyses(cohortDefinitionId));
+		queriesToRun.addAll(getQueriesForCustomDistributionAnalyses(cohortDefinitionId, strata));
+		queriesToRun.addAll(getQueriesForCustomPrevalenceAnalyses(cohortDefinitionId, strata));
 		queriesToRun.addAll(getQueriesForCriteriaAnalyses(cohortDefinitionId, strata));
 		return queriesToRun;
 	}
