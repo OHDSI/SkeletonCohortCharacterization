@@ -286,7 +286,7 @@ public class CCQueryBuilder {
 		String tableName = "";
 		if (analysis instanceof FeatureAnalysisWithCriteria) {
 			FeatureAnalysisWithCriteria fa = (FeatureAnalysisWithCriteria) analysis;
-			tableName = fa.getAggregate().hasQuery() ? fa.getAggregate().getQuery() : "";
+			tableName = Objects.nonNull(fa.getAggregate()) && fa.getAggregate().hasQuery() ? fa.getAggregate().getQuery() : "";
 		}
 		return tableName;
 	}
