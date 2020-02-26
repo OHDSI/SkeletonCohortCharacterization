@@ -61,7 +61,7 @@ public class CCQueryBuilder {
 	private static final String[] STRATA_REGEXES = new String[] { "strataQuery", "targetTable", "strataCohortTable", "eventsTable" };
 
 	private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
-					.add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "strataId", "strataName")
+					.add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "strataId", "strataName", "aggregateId", "aggregateName")
 					.build();
 
 	private static final Collection<String> STRATA_PARAM_NAMES = ImmutableList.<String>builder()
@@ -70,6 +70,7 @@ public class CCQueryBuilder {
 					.build();
 
 	private static final Function<String, String> COMPLETE_DOTCOMMA = s -> s.trim().endsWith(";") ? s : s + ";";
+	private static final String COUNT_SQLFUNC = "count(*)";
 
 	private final String prevalenceRetrievingQuery = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceRetrieving.sql");
 
@@ -268,11 +269,13 @@ public class CCQueryBuilder {
 		String strataName = Objects.nonNull(strata) ? strata.getName() : "";
 		Collection<String> paramValues = Lists.newArrayList(String.valueOf(cohortDefinitionId), String.valueOf(jobId), String.valueOf(analysis.getId()),
 						analysis.getName(), feature.getName(), String.valueOf(conceptId),
-						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), strataName);
-		String aggregateQuery = getAggregateQuery(analysis);
-		String valueExpression = getValueExpression(analysis);
+						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), strataName,
+						String.valueOf(getAggregateId(feature)),
+						getAggregateName(feature));
+		String aggregateQuery = getAggregateQuery(feature);
+		String valueExpression = getValueExpression(feature);
 		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable, aggregateQuery, valueExpression,
-				String.valueOf(useAggregatedValue(analysis))};
+				String.valueOf(useAggregatedValue(feature))};
 
 		return Arrays.stream(SqlSplit.splitSql(queryFile))
 						.map(COMPLETE_DOTCOMMA)
@@ -281,39 +284,44 @@ public class CCQueryBuilder {
 						.collect(Collectors.toList());
 	}
 
-	private String getAggregateQuery(FeatureAnalysis analysis) {
+	private Integer getAggregateId(BaseCriteriaFeature feature) {
 
-		String tableName = "";
-		if (analysis instanceof FeatureAnalysisWithCriteria) {
-			FeatureAnalysisWithCriteria fa = (FeatureAnalysisWithCriteria) analysis;
-			tableName = Objects.nonNull(fa.getAggregate()) && fa.getAggregate().hasQuery() ? fa.getAggregate().getQuery() : "";
-		}
-		return tableName;
+		return Optional.ofNullable(feature.getAggregate())
+				.map(FeatureAnalysisAggregate::getId)
+				.orElse(0);
 	}
 
-	private String getValueExpression(FeatureAnalysis analysis) {
+	private String getAggregateName(BaseCriteriaFeature feature) {
 
-		String expr = "count(*)";
-		if (analysis instanceof FeatureAnalysisWithCriteria) {
-			FeatureAnalysisWithCriteria fa = (FeatureAnalysisWithCriteria) analysis;
-			FeatureAnalysisAggregate aggregate = fa.getAggregate();
-			if (Objects.nonNull(aggregate)) {
-				Optional<AggregateFunction> aggregator = Optional.ofNullable(aggregate.getFunction());
-				expr = aggregator.map(a -> a.getName() + "(").orElse("") +
-						aggregate.getExpression() +
-						aggregator.map(a -> ")").orElse("");
-			}
+		return Optional.ofNullable(feature.getAggregate())
+				.map(FeatureAnalysisAggregate::getName)
+				.orElse("");
+	}
+
+	private String getAggregateQuery(BaseCriteriaFeature feature) {
+
+		return Optional.ofNullable(feature.getAggregate())
+				.map(f -> f.hasQuery() ? f.getQuery() : "")
+				.orElse("");
+	}
+
+	private String getValueExpression(BaseCriteriaFeature feature) {
+
+		String expr = COUNT_SQLFUNC;
+		FeatureAnalysisAggregate aggregate = feature.getAggregate();
+		if (Objects.nonNull(aggregate)) {
+			Optional<AggregateFunction> aggregator = Optional.ofNullable(aggregate.getFunction());
+			expr = aggregator.map(a -> a.getName() + "(").orElse("") +
+					aggregate.getExpression() +
+					aggregator.map(a -> ")").orElse("");
 		}
 		return expr;
 	}
 
-	private boolean useAggregatedValue(FeatureAnalysis analysis) {
+	private boolean useAggregatedValue(BaseCriteriaFeature feature) {
 
-		if (analysis instanceof FeatureAnalysisWithCriteria) {
-			FeatureAnalysisAggregate aggregate = ((FeatureAnalysisWithCriteria) analysis).getAggregate();
-			return Objects.isNull(aggregate) || Objects.nonNull(aggregate.getFunction());
-		}
-		return true;
+		FeatureAnalysisAggregate aggregate = feature.getAggregate();
+		return Objects.isNull(aggregate) || Objects.nonNull(aggregate.getFunction());
 	}
 
 	private String getCriteriaGroupQuery(FeatureAnalysis analysis, BaseCriteriaFeature feature, String eventTable) {

@@ -68,6 +68,8 @@ select
   CAST(@executionId AS BIGINT) as cc_generation_id,
   CAST(@strataId AS BIGINT) as strata_id,
   CAST('@strataName' AS VARCHAR(255)) as strata_name,
+  CAST(@aggregateId AS INTEGER) as aggregate_id,
+  CAST('@aggregateName' AS VARCHAR(1000)) as aggregate_name,
   event_stat_values.count_value,
   CAST(case when count_no_value = 0 then event_stat_values.min_value else 0 end AS float) as min_value,
   event_stat_values.max_value,
@@ -82,9 +84,9 @@ INTO #events_dist
 from events_max_value, event_stat_values, events_p10_value, events_p25_value, events_median_value, events_p75_value, events_p90_value;
 
 insert into @results_database_schema.cc_results(type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
-  cohort_definition_id, cc_generation_id, strata_id, strata_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
+  cohort_definition_id, cc_generation_id, strata_id, strata_name, aggregate_id, aggregate_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
 select type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
-  cohort_definition_id, cc_generation_id, strata_id, strata_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value
+  cohort_definition_id, cc_generation_id, strata_id, strata_name, aggregate_id, aggregate_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value
 FROM #events_dist;
 
 truncate table #events_dist;
