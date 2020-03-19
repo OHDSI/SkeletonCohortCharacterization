@@ -9,7 +9,7 @@ WITH qualified_events AS (
 )
 select 
     CAST('PREVALENCE' AS VARCHAR(255)) as type,
-    CAST('CRITERIA' AS VARCHAR(255)) as fa_type,
+    CAST('CRITERIA_SET' AS VARCHAR(255)) as fa_type,
     CAST(@covariateId AS BIGINT) as covariate_id,
     CAST('@covariateName' AS VARCHAR(1000)) as covariate_name,
     CAST(@analysisId AS INTEGER) as analysis_id,
