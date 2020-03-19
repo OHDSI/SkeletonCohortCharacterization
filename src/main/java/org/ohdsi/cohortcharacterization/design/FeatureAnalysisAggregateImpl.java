@@ -12,6 +12,7 @@ public class FeatureAnalysisAggregateImpl implements FeatureAnalysisAggregate {
     private AggregateFunction function;
     private String expression;
     private String query;
+    private Integer id;
 
     @Override
     public String getName() {
@@ -47,5 +48,10 @@ public class FeatureAnalysisAggregateImpl implements FeatureAnalysisAggregate {
     public String getQuery() {
 
         return query;
+    }
+
+    @Override
+    public Integer getId() {
+        return id;
     }
 }
