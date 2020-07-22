@@ -50,7 +50,7 @@ getCohortSqls <- function(studySpec, cdmSchema, vocabularySchema, resultSchema, 
     optionsJSON <- toJSON(options, container = FALSE)[[1]]
     queryExpressionOptions <- queryBuilder$BuildExpressionQueryOptions$fromJson(optionsJSON)
 
-    expressionJSON <- toJSON(c$expression)[[1]]
+    expressionJSON <- toJSON(c$expression, digits = 32)[[1]]
     expression <- cohortExpression$fromJson(expressionJSON)
 
     sqls <- c(sqls, queryBuilder$buildExpressionQuery(expression, queryExpressionOptions))
