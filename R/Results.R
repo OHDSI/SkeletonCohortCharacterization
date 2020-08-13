@@ -63,7 +63,7 @@ trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 buildReports <- function(analysis, cohorts, stratas, results, outputFolder) {
   colNames <- getColumnNames(analysis[c('TYPE')], results)
 
-  for(i in 1:length(cohorts)) {
+  for(i in 1:nrow(cohorts)) {
     cohort <- cohorts[i,]
     analysisId <- trim(analysis[c('ANALYSIS_ID')])
     analysisName <- analysis[c('ANALYSIS_NAME')]
