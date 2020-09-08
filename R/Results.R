@@ -131,7 +131,7 @@ saveResults <- function(connectionDetails, cohortCharacterization, analysisId, r
 
   #for (index in 1:nrow(analyses)) {
   #  analysis <- analyses[index,]
-  #  buildReports(analysis, cohorts, strats, results, outputFolder)
+  #  buildReports(analysis, cohorts, stratas, results, outputFolder)
   #}
 
   DatabaseConnector::disconnect(con)
