@@ -53,7 +53,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <src.dir>java</src.dir>
         <test.dir>test</test.dir>
-        <arachne.version>1.16.0-SNAPSHOT</arachne.version>
+        <arachne.version>1.16.2-SNAPSHOT</arachne.version>
     </properties>
     <distributionManagement>
         <repository>
