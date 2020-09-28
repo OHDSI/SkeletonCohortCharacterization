@@ -63,10 +63,10 @@ trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 buildReports <- function(analysis, cohorts, stratas, results, outputFolder) {
   colNames <- getColumnNames(analysis[c('TYPE')], results)
 
-  for(i in 1:length(cohorts)) {
+  for(i in 1:nrow(cohorts)) {
     cohort <- cohorts[i,]
     analysisId <- trim(analysis[c('ANALYSIS_ID')])
-    analysisName <- analysis[c('ANALYSIS_NAME')]
+    analysisName <- trim(analysis[[c('ANALYSIS_NAME')]])
     cohortId <- trim(cohort$COHORT_DEFINITION_ID)
     ParallelLogger::logInfo(paste('Building report for analysis "', analysisName, ' ', analysisId, '" at cohort "', cohort$name, '"', sep = ''))
     reportData <- results[which(results$ANALYSIS_ID == analysisId & results$COHORT_DEFINITION_ID == cohortId), colNames]
@@ -91,7 +91,7 @@ buildReports <- function(analysis, cohorts, stratas, results, outputFolder) {
 #' @param analysisId analysis identifier
 #' @param resultsSchema the name of schema where results would be placed
 #' @param outputFolder folder name where results would be saved
-#' @param tresholdLevel treshold level is used for prevalence analyses to reduce meaningless records having percentage lower than 
+#' @param tresholdLevel treshold level is used for prevalence analyses to reduce meaningless records having percentage lower than
 #'                      treshold level. Default value is 0.01
 #'
 #' @export
@@ -129,10 +129,10 @@ saveResults <- function(connectionDetails, cohortCharacterization, analysisId, r
 
   apply(analyses, 1, buildReports, cohorts, stratas, results, outputFolder)
 
-  # for(analysis in analyses) {
-  #   print(analysis)
-  #   buildReports(analysis, cohorts, stratas, results, outputFolder)
-  # }
+  #for (index in 1:nrow(analyses)) {
+  #  analysis <- analyses[index,]
+  #  buildReports(analysis, cohorts, stratas, results, outputFolder)
+  #}
 
   DatabaseConnector::disconnect(con)
 }

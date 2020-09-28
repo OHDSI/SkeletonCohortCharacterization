@@ -153,7 +153,7 @@ public class CCQueryBuilder {
 										ArrayUtils.addAll(CUSTOM_PARAMETERS, "strataId", "strataName"),
 										new String[] { String.valueOf(v.getId()), QuoteUtils.escapeSql(v.getName()),
 												String.valueOf(cohortId), String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId, strata),
-												String.valueOf(strataId), strataName }).stream())
+												String.valueOf(strataId), QuoteUtils.escapeSql(strataName) }).stream())
 						.collect(Collectors.toList());
 	}
 
@@ -169,7 +169,7 @@ public class CCQueryBuilder {
 						.flatMap(v -> prepareStatements(customPrevalenceQueryWrapper, sessionId,
 										ArrayUtils.addAll(CUSTOM_PARAMETERS, "strataId", "strataName"),
 										new String[] { String.valueOf(v.getId()), QuoteUtils.escapeSql(v.getName()), String.valueOf(cohortId),
-												String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId, strata), String.valueOf(strataId), strataName }).stream())
+												String.valueOf(jobId), renderCustomAnalysisDesign(v, cohortId, strata), String.valueOf(strataId), QuoteUtils.escapeSql(strataName) }).stream())
 						.collect(Collectors.toList());
 	}
 
@@ -216,13 +216,13 @@ public class CCQueryBuilder {
 			final String distFeatures = String.format(cohortWrapper, cohortId, distColumns,
 							StringUtils.stripEnd(jsonObject.getString("sqlQueryContinuousFeatures"), ";"));
 			queries.addAll(prepareStatements(distributionRetrievingQuery, sessionId, ArrayUtils.addAll(RETRIEVING_PARAMETERS, "strataId", "strataName"),
-							new String[] { distFeatures, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId), String.valueOf(strataId), strataName }));
+							new String[] { distFeatures, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId), String.valueOf(strataId), QuoteUtils.escapeSql(strataName) }));
 		}
 		if (ccHasPresetPrevalenceAnalyses()) {
 			final String featureColumns = "cohort_definition_id, covariate_id, sum_value, average_value";
 			final String features = String.format(cohortWrapper, cohortId, featureColumns,
 							StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
-			String[] paramValues = new String[]{ features, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId), String.valueOf(strataId), strataName };
+			String[] paramValues = new String[]{ features, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId), String.valueOf(strataId), QuoteUtils.escapeSql(strataName) };
 			queries.addAll(prepareStatements(prevalenceRetrievingQuery, sessionId, ArrayUtils.addAll(RETRIEVING_PARAMETERS, "strataId", "strataName"), paramValues));
 		}
 
@@ -268,8 +268,8 @@ public class CCQueryBuilder {
 		Long strataId = Objects.nonNull(strata) ? strata.getId() : 0L;
 		String strataName = Objects.nonNull(strata) ? strata.getName() : "";
 		Collection<String> paramValues = Lists.newArrayList(String.valueOf(cohortDefinitionId), String.valueOf(jobId), String.valueOf(analysis.getId()),
-						analysis.getName(), feature.getName(), String.valueOf(conceptId),
-						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), strataName,
+						QuoteUtils.escapeSql(analysis.getName()), QuoteUtils.escapeSql(feature.getName()), String.valueOf(conceptId),
+						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), QuoteUtils.escapeSql(strataName),
 						String.valueOf(getAggregateId(feature)),
 						getAggregateName(feature));
 		String aggregateQuery = getAggregateQuery(feature);
@@ -295,6 +295,7 @@ public class CCQueryBuilder {
 
 		return Optional.ofNullable(feature.getAggregate())
 				.map(FeatureAnalysisAggregate::getName)
+                .map(QuoteUtils::escapeSql)
 				.orElse("");
 	}
 
