@@ -126,8 +126,7 @@ saveResults <- function(connectionDetails, cohortCharacterization, analysisId, r
     stratas <- findStratas(results)
 
     apply(analyses, 1, buildReports, cohorts, stratas, results, outputFolder)
-  }
-  else {
+  } else {
     ParallelLogger::logInfo("Raw data is empty. Skipping reports creation.")
   }
 
