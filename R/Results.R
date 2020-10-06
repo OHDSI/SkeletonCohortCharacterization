@@ -113,21 +113,22 @@ saveResults <- function(connectionDetails, cohortCharacterization, analysisId, r
 
   results <- DatabaseConnector::querySql(con, sql)
 
-  if (nrow(results) > 0) {
-    results[which(results$STRATA_ID == 0), 'STRATA_NAME'] <- 'All stratas'
-  }
-
   fileName <- file.path(outputFolder, "raw_data.csv")
   ParallelLogger::logInfo(paste("Raw data is available at ", fileName))
   write.csv(results, fileName, row.names = TRUE)
 
-  cc <- fromJSON(cohortCharacterization)
+  if (nrow(results) > 0) {
+    results[which(results$STRATA_ID == 0), 'STRATA_NAME'] <- 'All stratas'
+    cc <- fromJSON(cohortCharacterization)
 
-  analyses <- findAnalyses(results)
-  cohorts <- findCohorts(cc, results)
-  stratas <- findStratas(results)
+    analyses <- findAnalyses(results)
+    cohorts <- findCohorts(cc, results)
+    stratas <- findStratas(results)
 
-  apply(analyses, 1, buildReports, cohorts, stratas, results, outputFolder)
+    apply(analyses, 1, buildReports, cohorts, stratas, results, outputFolder)
+  } else {
+    ParallelLogger::logInfo("Raw data is empty. Skipping reports creation.")
+  }
 
   #for (index in 1:nrow(analyses)) {
   #  analysis <- analyses[index,]
