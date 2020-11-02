@@ -1,6 +1,7 @@
 package org.ohdsi.cohortcharacterization.design;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ohdsi.analysis.TableJoin;
 import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisDomain;
@@ -15,8 +16,10 @@ public class FeatureAnalysisAggregateImpl implements FeatureAnalysisAggregate {
     private AggregateFunction function;
     private List<CriteriaColumn> additionalColumns;
     private String expression;
-    private String query;
     private Integer id;
+    private String joinTable;
+    private String joinCondition;
+    private TableJoin joinType;
 
     @Override
     public String getName() {
@@ -51,13 +54,22 @@ public class FeatureAnalysisAggregateImpl implements FeatureAnalysisAggregate {
     @Override
     public boolean hasQuery() {
 
-        return StringUtils.isNotBlank(query);
+        return StringUtils.isNotBlank(joinTable);
     }
 
     @Override
-    public String getQuery() {
+    public String getJoinTable() {
+        return joinTable;
+    }
 
-        return query;
+    @Override
+    public String getJoinCondition() {
+        return joinCondition;
+    }
+
+    @Override
+    public TableJoin getJoinType() {
+        return joinType;
     }
 
     @Override
