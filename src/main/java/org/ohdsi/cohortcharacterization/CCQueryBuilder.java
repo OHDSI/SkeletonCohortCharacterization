@@ -7,14 +7,8 @@ import static org.ohdsi.cohortcharacterization.Constants.Params.VOCABULARY_DATAB
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
@@ -39,9 +33,12 @@ import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.DemographicCriteria;
 import org.ohdsi.circe.cohortdefinition.WindowedCriteria;
+import org.ohdsi.circe.cohortdefinition.builders.BuilderOptions;
+import org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.cohortcharacterization.design.CohortCharacterizationImpl;
 import com.odysseusinc.arachne.commons.utils.QuoteUtils;
+import org.ohdsi.cohortcharacterization.utils.SafeFeature;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -57,7 +54,7 @@ public class CCQueryBuilder {
 
 	private static final String COHORT_STRATA_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/strataWithCriteria.sql");
 
-	private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "targetTable", "totalsTable", "aggregateQuery", "valueExpression", "useAggregatedValue" };
+	private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "targetTable", "totalsTable", "aggregateJoinTable", "aggregateJoin", "aggregateCondition", "valueExpression", "useAggregatedValue" };
 	private static final String[] STRATA_REGEXES = new String[] { "strataQuery", "targetTable", "strataCohortTable", "eventsTable" };
 
 	private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
@@ -272,9 +269,9 @@ public class CCQueryBuilder {
 						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), QuoteUtils.escapeSql(strataName),
 						String.valueOf(getAggregateId(feature)),
 						getAggregateName(feature));
-		String aggregateQuery = getAggregateQuery(feature);
+		String aggregateJoinTable = getAggregateJoinTable(feature);
 		String valueExpression = getValueExpression(feature);
-		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable, aggregateQuery, valueExpression,
+		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable, aggregateJoinTable, getAggregateJoin(feature), getAggregateCondition(feature), valueExpression,
 				String.valueOf(useAggregatedValue(feature))};
 
 		return Arrays.stream(SqlSplit.splitSql(queryFile))
@@ -284,11 +281,17 @@ public class CCQueryBuilder {
 						.collect(Collectors.toList());
 	}
 
+	private String getAggregateCondition(BaseCriteriaFeature feature) {
+		return SafeFeature.getAsString(feature, f -> StringUtils.defaultString(f.getJoinCondition()));
+	}
+
+	private String getAggregateJoin(BaseCriteriaFeature feature) {
+		return SafeFeature.getAsString(feature, f -> Objects.nonNull(f.getJoinType()) ? f.getJoinType().getTerm() : "");
+	}
+
 	private Integer getAggregateId(BaseCriteriaFeature feature) {
 
-		return Optional.ofNullable(feature.getAggregate())
-				.map(FeatureAnalysisAggregate::getId)
-				.orElse(0);
+		return SafeFeature.getAsInteger(feature, FeatureAnalysisAggregate::getId);
 	}
 
 	private String getAggregateName(BaseCriteriaFeature feature) {
@@ -299,11 +302,9 @@ public class CCQueryBuilder {
 				.orElse("");
 	}
 
-	private String getAggregateQuery(BaseCriteriaFeature feature) {
+	private String getAggregateJoinTable(BaseCriteriaFeature feature) {
 
-		return Optional.ofNullable(feature.getAggregate())
-				.map(f -> f.hasQuery() ? f.getQuery() : "")
-				.orElse("");
+		return SafeFeature.getAsString(feature, f -> f.hasQuery() ? f.getJoinTable() : "");
 	}
 
 	private String getValueExpression(BaseCriteriaFeature feature) {
@@ -317,6 +318,13 @@ public class CCQueryBuilder {
 					aggregator.map(a -> ")").orElse("");
 		}
 		return expr;
+	}
+
+	private List<CriteriaColumn> getAdditionalColumns(BaseCriteriaFeature feature) {
+
+		return Optional.ofNullable(feature.getAggregate())
+				.map(FeatureAnalysisAggregate::getAdditionalColumns)
+				.orElse(Collections.emptyList());
 	}
 
 	private boolean useAggregatedValue(BaseCriteriaFeature feature) {
@@ -333,7 +341,9 @@ public class CCQueryBuilder {
 			if (feature instanceof WindowedCriteriaFeature) {
 				WindowedCriteria criteria = ((WindowedCriteriaFeature) feature).getExpression();
 				criteria.ignoreObservationPeriod = true;
-				groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, eventTable);
+				BuilderOptions options = new BuilderOptions();
+				options.additionalColumns = getAdditionalColumns(feature);
+				groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, eventTable, options);
 			} else if (feature instanceof DemographicCriteriaFeature) {
 				DemographicCriteria criteria = ((DemographicCriteriaFeature)feature).getExpression();
 				groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, eventTable);

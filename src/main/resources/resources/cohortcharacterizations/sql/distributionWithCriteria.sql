@@ -13,7 +13,7 @@ select
   @valueExpression as value_as_number
 into #events_count
 from ( @groupQuery ) v
-{@aggregateQuery != ""} ? {join qualified_events E on E.person_id = v.person_id @aggregateQuery}
+{@aggregateJoinTable != ""} ? {@aggregateJoin @cdm_database_schema.@aggregateJoinTable on @aggregateCondition}
 {@useAggregatedValue} ? {group by v.person_id}
 ;
 
