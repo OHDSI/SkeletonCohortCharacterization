@@ -8,7 +8,8 @@
     <artifactId>SkeletonCohortCharacterization</artifactId>
     <version>1.2.0-SNAPSHOT</version>
     <build>
-        <directory>inst/java</directory>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        <outputDirectory>${basedir}/target/classes</outputDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -33,7 +34,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <outputDirectory>inst/java</outputDirectory>
                             <excludeClassifiers>test</excludeClassifiers>
                             <excludeArtifactIds>SqlRender,featureExtraction,hamcrest,hamcrest-core,junit</excludeArtifactIds>
                         </configuration>

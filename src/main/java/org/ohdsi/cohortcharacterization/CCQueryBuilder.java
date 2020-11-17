@@ -51,10 +51,11 @@ public class CCQueryBuilder {
 
 	private static final String COHORT_STATS_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceWithCriteria.sql");
 	private static final String COHORT_DIST_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/distributionWithCriteria.sql");
+	private static final String MISSING_MEANS_ZERO_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/missingMeansZero.sql");
 
 	private static final String COHORT_STRATA_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/strataWithCriteria.sql");
 
-	private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "targetTable", "totalsTable", "aggregateJoinTable", "aggregateJoin", "aggregateCondition", "valueExpression", "useAggregatedValue" };
+	private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "targetTable", "totalsTable", "aggregateJoinTable", "aggregateJoin", "aggregateCondition", "valueExpression", "useAggregatedValue"};
 	private static final String[] STRATA_REGEXES = new String[] { "strataQuery", "targetTable", "strataCohortTable", "eventsTable" };
 
 	private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
@@ -273,7 +274,7 @@ public class CCQueryBuilder {
 		String valueExpression = getValueExpression(feature);
 		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable, aggregateJoinTable, getAggregateJoin(feature), getAggregateCondition(feature), valueExpression,
 				String.valueOf(useAggregatedValue(feature))};
-
+		queryFile = StringUtils.replace(queryFile, "@missingMeansZeroQuery", getMissingMeansZero(feature) ? MISSING_MEANS_ZERO_QUERY : "");
 		return Arrays.stream(SqlSplit.splitSql(queryFile))
 						.map(COMPLETE_DOTCOMMA)
 						.flatMap(sql -> prepareStatements(sql, sessionId, ArrayUtils.addAll(CRITERIA_REGEXES, paramNames),
@@ -300,6 +301,10 @@ public class CCQueryBuilder {
 				.map(FeatureAnalysisAggregate::getName)
                 .map(QuoteUtils::escapeSql)
 				.orElse("");
+	}
+
+	private boolean getMissingMeansZero(BaseCriteriaFeature feature) {
+		return SafeFeature.getAsBoolean(feature, FeatureAnalysisAggregate::isMissingMeansZero);
 	}
 
 	private String getAggregateJoinTable(BaseCriteriaFeature feature) {

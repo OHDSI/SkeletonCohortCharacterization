@@ -20,6 +20,7 @@ public class FeatureAnalysisAggregateImpl implements FeatureAnalysisAggregate {
     private String joinTable;
     private String joinCondition;
     private TableJoin joinType;
+    private boolean missingMeansZero;
 
     @Override
     public String getName() {
@@ -75,5 +76,10 @@ public class FeatureAnalysisAggregateImpl implements FeatureAnalysisAggregate {
     @Override
     public Integer getId() {
         return id;
+    }
+
+    @Override
+    public boolean isMissingMeansZero() {
+        return missingMeansZero;
     }
 }

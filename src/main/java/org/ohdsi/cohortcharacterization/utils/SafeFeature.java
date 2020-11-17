@@ -24,4 +24,9 @@ public class SafeFeature {
 
         return get(feature, mapFunc, "");
     }
+    
+    public static boolean getAsBoolean(BaseCriteriaFeature feature, Function<? super FeatureAnalysisAggregate, Boolean> mapFunc) {
+
+        return get(feature, mapFunc, false);
+    }
 }

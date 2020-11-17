@@ -8,7 +8,7 @@ public abstract class BaseCriteriaFeatureImpl<T> implements BaseCriteriaFeature<
 
 	private String name;
 	private Long id;
-    private FeatureAnalysisAggregateImpl aggregate;
+	private FeatureAnalysisAggregateImpl aggregate;
 
 	@Override
 	public String getName() {
@@ -32,12 +32,12 @@ public abstract class BaseCriteriaFeatureImpl<T> implements BaseCriteriaFeature<
 		this.id = id;
 	}
 
-    @Override
-    public FeatureAnalysisAggregate getAggregate() {
-        return aggregate;
-    }
+	@Override
+	public FeatureAnalysisAggregate getAggregate() {
+		return aggregate;
+	}
 
-    public void setAggregate(FeatureAnalysisAggregateImpl aggregate) {
-        this.aggregate = aggregate;
-    }
+	public void setAggregate(FeatureAnalysisAggregateImpl aggregate) {
+		this.aggregate = aggregate;
+	}
 }
