@@ -59,7 +59,7 @@ public class CCQueryBuilder {
 	private static final String[] STRATA_REGEXES = new String[] { "strataQuery", "targetTable", "strataCohortTable", "eventsTable" };
 
 	private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
-					.add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "strataId", "strataName", "aggregateId", "aggregateName")
+					.add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "strataId", "strataName", "aggregateId", "aggregateName", "missingMeansZero")
 					.build();
 
 	private static final Collection<String> STRATA_PARAM_NAMES = ImmutableList.<String>builder()
@@ -269,7 +269,8 @@ public class CCQueryBuilder {
 						QuoteUtils.escapeSql(analysis.getName()), QuoteUtils.escapeSql(feature.getName()), String.valueOf(conceptId),
 						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), QuoteUtils.escapeSql(strataName),
 						String.valueOf(getAggregateId(feature)),
-						getAggregateName(feature));
+						getAggregateName(feature),
+						getMissingMeansZero(feature) ? "1":"0");
 		String aggregateJoinTable = getAggregateJoinTable(feature);
 		String valueExpression = getValueExpression(feature);
 		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable, aggregateJoinTable, getAggregateJoin(feature), getAggregateCondition(feature), valueExpression,

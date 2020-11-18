@@ -35,6 +35,7 @@ select
   CAST('@strataName' AS VARCHAR(255)) as strata_name,
   CAST(@aggregateId AS INTEGER) as aggregate_id,
   CAST('@aggregateName' AS VARCHAR(1000)) as aggregate_name,
+  CAST(@missingMeansZero as INTEGER) as missing_means_zero,
   o.person_count as person_count,
   o.total as record_count,
   o.avg_value,
@@ -64,9 +65,9 @@ cross join (
   group by value_as_number
 ) s
 group by o.total, o.person_count, o.min_value, o.max_value, o.avg_value, o.stdev_value;
-insert into @results_database_schema.cc_results(type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
+insert into @results_database_schema.cc_results(type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, missing_means_zero, concept_id,
   cohort_definition_id, cc_generation_id, strata_id, strata_name, aggregate_id, aggregate_name, count_value, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value)
-select type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id,
+select type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, missing_means_zero, concept_id,
   cohort_definition_id, cc_generation_id, strata_id, strata_name, aggregate_id, aggregate_name, person_count, min_value, max_value, avg_value, stdev_value, p10_value, p25_value, median_value, p75_value, p90_value
 FROM #events_dist;
 
