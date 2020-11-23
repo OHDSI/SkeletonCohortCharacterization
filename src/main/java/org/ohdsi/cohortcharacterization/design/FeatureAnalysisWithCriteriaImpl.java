@@ -1,8 +1,9 @@
 package org.ohdsi.cohortcharacterization.design;
 
-import java.util.List;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisWithCriteria;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
+
+import java.util.List;
 
 public abstract class FeatureAnalysisWithCriteriaImpl<T> extends FeatureAnalysisImpl<List<T>> implements FeatureAnalysisWithCriteria<T, Integer> {
 

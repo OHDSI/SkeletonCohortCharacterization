@@ -7,14 +7,8 @@ import static org.ohdsi.cohortcharacterization.Constants.Params.VOCABULARY_DATAB
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
@@ -22,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.ohdsi.analysis.Utils;
 import org.ohdsi.analysis.WithId;
+import org.ohdsi.analysis.cohortcharacterization.design.AggregateFunction;
 import org.ohdsi.analysis.cohortcharacterization.design.BaseCriteriaFeature;
 import org.ohdsi.analysis.cohortcharacterization.design.CcResultType;
 import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterization;
@@ -30,6 +25,7 @@ import org.ohdsi.analysis.cohortcharacterization.design.CohortCharacterizationSt
 import org.ohdsi.analysis.cohortcharacterization.design.CriteriaFeature;
 import org.ohdsi.analysis.cohortcharacterization.design.DemographicCriteriaFeature;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysis;
+import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisAggregate;
 import org.ohdsi.analysis.cohortcharacterization.design.FeatureAnalysisWithCriteria;
 import org.ohdsi.analysis.cohortcharacterization.design.StandardFeatureAnalysisType;
 import org.ohdsi.analysis.cohortcharacterization.design.WindowedCriteriaFeature;
@@ -37,9 +33,12 @@ import org.ohdsi.circe.cohortdefinition.CohortExpressionQueryBuilder;
 import org.ohdsi.circe.cohortdefinition.ConceptSet;
 import org.ohdsi.circe.cohortdefinition.DemographicCriteria;
 import org.ohdsi.circe.cohortdefinition.WindowedCriteria;
+import org.ohdsi.circe.cohortdefinition.builders.BuilderOptions;
+import org.ohdsi.circe.cohortdefinition.builders.CriteriaColumn;
 import org.ohdsi.circe.helper.ResourceHelper;
 import org.ohdsi.cohortcharacterization.design.CohortCharacterizationImpl;
 import com.odysseusinc.arachne.commons.utils.QuoteUtils;
+import org.ohdsi.cohortcharacterization.utils.SafeFeature;
 import org.ohdsi.featureExtraction.FeatureExtraction;
 import org.ohdsi.sql.SqlRender;
 import org.ohdsi.sql.SqlSplit;
@@ -52,14 +51,15 @@ public class CCQueryBuilder {
 
 	private static final String COHORT_STATS_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceWithCriteria.sql");
 	private static final String COHORT_DIST_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/distributionWithCriteria.sql");
+	private static final String MISSING_MEANS_ZERO_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/missingMeansZero.sql");
 
 	private static final String COHORT_STRATA_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/strataWithCriteria.sql");
 
-	private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "targetTable", "totalsTable" };
+	private static final String[] CRITERIA_REGEXES = new String[] { "groupQuery", "targetTable", "totalsTable", "aggregateJoinTable", "aggregateJoin", "aggregateCondition", "valueExpression", "useAggregatedValue"};
 	private static final String[] STRATA_REGEXES = new String[] { "strataQuery", "targetTable", "strataCohortTable", "eventsTable" };
 
 	private static final Collection<String> CRITERIA_PARAM_NAMES = ImmutableList.<String>builder()
-					.add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "strataId", "strataName")
+					.add("cohortId", "executionId", "analysisId", "analysisName", "covariateName", "conceptId", "covariateId", "strataId", "strataName", "aggregateId", "aggregateName", "missingMeansZero")
 					.build();
 
 	private static final Collection<String> STRATA_PARAM_NAMES = ImmutableList.<String>builder()
@@ -68,6 +68,7 @@ public class CCQueryBuilder {
 					.build();
 
 	private static final Function<String, String> COMPLETE_DOTCOMMA = s -> s.trim().endsWith(";") ? s : s + ";";
+	private static final String COUNT_SQLFUNC = "count(*)";
 
 	private final String prevalenceRetrievingQuery = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/prevalenceRetrieving.sql");
 
@@ -266,14 +267,76 @@ public class CCQueryBuilder {
 		String strataName = Objects.nonNull(strata) ? strata.getName() : "";
 		Collection<String> paramValues = Lists.newArrayList(String.valueOf(cohortDefinitionId), String.valueOf(jobId), String.valueOf(analysis.getId()),
 						QuoteUtils.escapeSql(analysis.getName()), QuoteUtils.escapeSql(feature.getName()), String.valueOf(conceptId),
-						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), QuoteUtils.escapeSql(strataName));
-		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable };
-
+						String.valueOf(((WithId)feature).getId()), String.valueOf(strataId), QuoteUtils.escapeSql(strataName),
+						String.valueOf(getAggregateId(feature)),
+						getAggregateName(feature),
+						getMissingMeansZero(feature) ? "1":"0");
+		String aggregateJoinTable = getAggregateJoinTable(feature);
+		String valueExpression = getValueExpression(feature);
+		String[] criteriaValues = new String[]{ groupQuery, targetTable, cohortTable, aggregateJoinTable, getAggregateJoin(feature), getAggregateCondition(feature), valueExpression,
+				String.valueOf(useAggregatedValue(feature))};
+		queryFile = StringUtils.replace(queryFile, "@missingMeansZeroQuery", getMissingMeansZero(feature) ? MISSING_MEANS_ZERO_QUERY : "");
 		return Arrays.stream(SqlSplit.splitSql(queryFile))
 						.map(COMPLETE_DOTCOMMA)
 						.flatMap(sql -> prepareStatements(sql, sessionId, ArrayUtils.addAll(CRITERIA_REGEXES, paramNames),
 										ArrayUtils.addAll(criteriaValues, paramValues.toArray(new String[0]))).stream())
 						.collect(Collectors.toList());
+	}
+
+	private String getAggregateCondition(BaseCriteriaFeature feature) {
+		return SafeFeature.getAsString(feature, f -> StringUtils.defaultString(f.getJoinCondition()));
+	}
+
+	private String getAggregateJoin(BaseCriteriaFeature feature) {
+		return SafeFeature.getAsString(feature, f -> Objects.nonNull(f.getJoinType()) ? f.getJoinType().getTerm() : "");
+	}
+
+	private Integer getAggregateId(BaseCriteriaFeature feature) {
+
+		return SafeFeature.getAsInteger(feature, FeatureAnalysisAggregate::getId);
+	}
+
+	private String getAggregateName(BaseCriteriaFeature feature) {
+
+		return Optional.ofNullable(feature.getAggregate())
+				.map(FeatureAnalysisAggregate::getName)
+                .map(QuoteUtils::escapeSql)
+				.orElse("");
+	}
+
+	private boolean getMissingMeansZero(BaseCriteriaFeature feature) {
+		return SafeFeature.getAsBoolean(feature, FeatureAnalysisAggregate::isMissingMeansZero);
+	}
+
+	private String getAggregateJoinTable(BaseCriteriaFeature feature) {
+
+		return SafeFeature.getAsString(feature, f -> f.hasQuery() ? f.getJoinTable() : "");
+	}
+
+	private String getValueExpression(BaseCriteriaFeature feature) {
+
+		String expr = COUNT_SQLFUNC;
+		FeatureAnalysisAggregate aggregate = feature.getAggregate();
+		if (Objects.nonNull(aggregate)) {
+			Optional<AggregateFunction> aggregator = Optional.ofNullable(aggregate.getFunction());
+			expr = aggregator.map(a -> a.getName() + "(").orElse("") +
+					aggregate.getExpression() +
+					aggregator.map(a -> ")").orElse("");
+		}
+		return expr;
+	}
+
+	private List<CriteriaColumn> getAdditionalColumns(BaseCriteriaFeature feature) {
+
+		return Optional.ofNullable(feature.getAggregate())
+				.map(FeatureAnalysisAggregate::getAdditionalColumns)
+				.orElse(Collections.emptyList());
+	}
+
+	private boolean useAggregatedValue(BaseCriteriaFeature feature) {
+
+		FeatureAnalysisAggregate aggregate = feature.getAggregate();
+		return Objects.isNull(aggregate) || Objects.nonNull(aggregate.getFunction());
 	}
 
 	private String getCriteriaGroupQuery(FeatureAnalysis analysis, BaseCriteriaFeature feature, String eventTable) {
@@ -284,7 +347,9 @@ public class CCQueryBuilder {
 			if (feature instanceof WindowedCriteriaFeature) {
 				WindowedCriteria criteria = ((WindowedCriteriaFeature) feature).getExpression();
 				criteria.ignoreObservationPeriod = true;
-				groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, eventTable);
+				BuilderOptions options = new BuilderOptions();
+				options.additionalColumns = getAdditionalColumns(feature);
+				groupQuery = queryBuilder.getWindowedCriteriaQuery(criteria, eventTable, options);
 			} else if (feature instanceof DemographicCriteriaFeature) {
 				DemographicCriteria criteria = ((DemographicCriteriaFeature)feature).getExpression();
 				groupQuery = queryBuilder.getDemographicCriteriaQuery(criteria, eventTable);
