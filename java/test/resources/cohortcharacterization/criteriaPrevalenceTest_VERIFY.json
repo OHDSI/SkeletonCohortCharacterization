@@ -1,0 +1,31 @@
+{
+  "criteria_prevalence.cc_results": [
+    {
+      "type": "PREVALENCE",
+      "fa_type": "CRITERIA_SET",
+      "cc_generation_id": 1,
+      "analysis_id": 101,
+      "analysis_name": "Criteria Prevalence Feature",
+      "covariate_id": 1,
+      "covariate_name": "Target Drug Exposure",
+      "strata_id": 0,
+      "strata_name": "",
+      "time_window": null,
+      "concept_id": 0,
+      "count_value": 1,
+      "avg_value": 0.25,
+      "stdev_value": null,
+      "min_value":null,
+      "p10_value":null,
+      "p25_value":null,
+      "median_value":null,
+      "p75_value": null,
+      "p90_value":null,
+      "max_value":null,
+      "cohort_definition_id": 1,
+      "aggregate_id": null,
+      "aggregate_name": null,
+      "missing_means_zero": null
+    }
+  ]
+}

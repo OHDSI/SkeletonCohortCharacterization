@@ -1,0 +1,566 @@
+{
+  "name": "[EPI_852] Draft CC",
+  "cohorts": [
+    {
+      "id": 333,
+      "name": "[EPI852] Myasthenia gravis [NS] no Occular, pediatrics",
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "ConditionOccurrence": {
+                "CodesetId": 0,
+                "ConditionTypeExclude": false
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "All"
+          }
+        },
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "Myasthenia gravis (exclude congenital, juvenile, neonatal or genetic) ",
+            "expression": {
+              "items": [
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4046355,
+                    "CONCEPT_NAME": "Genetically determined myasthenia",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "230669004",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 76685,
+                    "CONCEPT_NAME": "Myasthenia gravis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "91637004",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4204694,
+                    "CONCEPT_NAME": "Myasthenia gravis, juvenile form",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "55051001",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4046356,
+                    "CONCEPT_NAME": "Congenital myasthenic syndrome",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "230672006",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4101899,
+                    "CONCEPT_NAME": "Congenital and developmental myasthenia",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "193216006",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 81400,
+                    "CONCEPT_NAME": "Neonatal myasthenia gravis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "82178003",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4046357,
+                    "CONCEPT_NAME": "Putative defect in acetylcholine synthesis or packaging",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "230676009",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4045732,
+                    "CONCEPT_NAME": "Myopathy in myasthenia gravis",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "230687001",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                },
+                {
+                  "concept": {
+                    "CONCEPT_ID": 4048782,
+                    "CONCEPT_NAME": "Ocular myasthenia",
+                    "STANDARD_CONCEPT": "S",
+                    "STANDARD_CONCEPT_CAPTION": "Standard",
+                    "INVALID_REASON": "V",
+                    "INVALID_REASON_CAPTION": "Valid",
+                    "CONCEPT_CODE": "230684008",
+                    "DOMAIN_ID": "Condition",
+                    "VOCABULARY_ID": "SNOMED",
+                    "CONCEPT_CLASS_ID": "Clinical Finding"
+                  },
+                  "isExcluded": true,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [
+          {
+            "name": "Age < 18 years ",
+            "expression": {
+              "Type": "ALL",
+              "CriteriaList": [],
+              "DemographicCriteriaList": [
+                {
+                  "Age": {
+                    "Value": 18,
+                    "Op": "lt"
+                  }
+                }
+              ],
+              "Groups": []
+            }
+          },
+          {
+            "name": "With 30d prior",
+            "expression": {
+              "Type": "ALL",
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "ObservationPeriod": {}
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 30,
+                      "Coeff": -1
+                    },
+                    "UseIndexEnd": false,
+                    "UseEventEnd": false
+                  },
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 2,
+                    "Count": 1,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          }
+        ],
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {}
+      }
+    }
+  ],
+  "featureAnalyses": [
+    {
+      "id": 5,
+      "type": "PRESET",
+      "name": "Drug Group Era Long Term",
+      "domain": "DRUG",
+      "statType": "PREVALENCE",
+      "descr": "One covariate per drug rolled up to ATC groups in the drug_era table overlapping with any part of the long term window.",
+      "design": "DrugGroupEraLongTerm",
+      "description": "One covariate per drug rolled up to ATC groups in the drug_era table overlapping with any part of the long term window."
+    },
+    {
+      "id": 9,
+      "type": "PRESET",
+      "name": "Condition Era Start Long Term",
+      "domain": "CONDITION",
+      "statType": "PREVALENCE",
+      "descr": "One covariate per condition in the condition_era table starting in the long term window.",
+      "design": "ConditionEraStartLongTerm",
+      "description": "One covariate per condition in the condition_era table starting in the long term window."
+    },
+    {
+      "id": 23,
+      "type": "PRESET",
+      "name": "Condition Era Long Term",
+      "domain": "CONDITION",
+      "statType": "PREVALENCE",
+      "descr": "One covariate per condition in the condition_era table overlapping with any part of the long term window.",
+      "design": "ConditionEraLongTerm",
+      "description": "One covariate per condition in the condition_era table overlapping with any part of the long term window."
+    },
+    {
+      "id": 24,
+      "type": "PRESET",
+      "name": "Drug Group Era Start Long Term",
+      "domain": "DRUG",
+      "statType": "PREVALENCE",
+      "descr": "One covariate per drug rolled up to ATC groups in the drug_era table starting in the long term window.",
+      "design": "DrugGroupEraStartLongTerm",
+      "description": "One covariate per drug rolled up to ATC groups in the drug_era table starting in the long term window."
+    },
+    {
+      "id": 55,
+      "type": "PRESET",
+      "name": "Procedure Occurrence Short Term",
+      "domain": "PROCEDURE",
+      "statType": "PREVALENCE",
+      "descr": "One covariate per procedure in the procedure_occurrence table in the short term window.",
+      "design": "ProcedureOccurrenceShortTerm",
+      "description": "One covariate per procedure in the procedure_occurrence table in the short term window."
+    },
+    {
+      "id": 84,
+      "type": "PRESET",
+      "name": "Procedure Occurrence Long Term",
+      "domain": "PROCEDURE",
+      "statType": "PREVALENCE",
+      "descr": "One covariate per procedure in the procedure_occurrence table in the long term window.",
+      "design": "ProcedureOccurrenceLongTerm",
+      "description": "One covariate per procedure in the procedure_occurrence table in the long term window."
+    },
+    {
+      "id": 116,
+      "type": "CRITERIA_SET",
+      "name": "[EPI_852] ImmunoG Feature",
+      "domain": "CONDITION",
+      "statType": "PREVALENCE",
+      "descr": "",
+      "design": [
+        {
+          "criteriaType": "CriteriaGroup",
+          "id": 1091,
+          "name": "Immuno G",
+          "aggregate": {
+            "default": true,
+            "additionalColumns": null,
+            "id": 1,
+            "name": "Events count",
+            "domain": null,
+            "function": "COUNT",
+            "expression": "*",
+            "joinTable": null,
+            "joinType": null,
+            "joinCondition": null,
+            "missingMeansZero": true
+          },
+          "expression": {
+            "Type": "ALL",
+            "Count": null,
+            "CriteriaList": [
+              {
+                "Criteria": {
+                  "DrugExposure": {
+                    "CorrelatedCriteria": null,
+                    "CodesetId": 0,
+                    "First": null,
+                    "OccurrenceStartDate": null,
+                    "OccurrenceEndDate": null,
+                    "DrugType": null,
+                    "DrugTypeExclude": false,
+                    "StopReason": null,
+                    "Refills": null,
+                    "Quantity": null,
+                    "DaysSupply": null,
+                    "RouteConcept": null,
+                    "EffectiveDrugDose": null,
+                    "DoseUnit": null,
+                    "LotNumber": null,
+                    "DrugSourceConcept": null,
+                    "Age": null,
+                    "Gender": null,
+                    "ProviderSpecialty": null,
+                    "VisitType": null
+                  }
+                },
+                "StartWindow": {
+                  "Start": {
+                    "Days": 30,
+                    "Coeff": -1
+                  },
+                  "End": {
+                    "Days": 365,
+                    "Coeff": 1
+                  },
+                  "UseIndexEnd": false,
+                  "UseEventEnd": false
+                },
+                "EndWindow": null,
+                "RestrictVisit": false,
+                "IgnoreObservationPeriod": false,
+                "Occurrence": {
+                  "Type": 2,
+                  "Count": 1,
+                  "IsDistinct": false,
+                  "CountColumn": null
+                }
+              }
+            ],
+            "DemographicCriteriaList": [],
+            "Groups": []
+          }
+        }
+      ],
+      "description": "",
+      "conceptSets": [
+        {
+          "id": 0,
+          "name": "Immunoglobulin G",
+          "expression": {
+            "items": [
+              {
+                "concept": {
+                  "CONCEPT_ID": 19117912,
+                  "CONCEPT_NAME": "immunoglobulin G",
+                  "STANDARD_CONCEPT": "S",
+                  "STANDARD_CONCEPT_CAPTION": "Standard",
+                  "INVALID_REASON": "V",
+                  "INVALID_REASON_CAPTION": "Valid",
+                  "CONCEPT_CODE": "5666",
+                  "DOMAIN_ID": "Drug",
+                  "VOCABULARY_ID": "RxNorm",
+                  "CONCEPT_CLASS_ID": "Ingredient"
+                },
+                "isExcluded": false,
+                "includeDescendants": true,
+                "includeMapped": false
+              },
+              {
+                "concept": {
+                  "CONCEPT_ID": 43730114,
+                  "CONCEPT_NAME": "Immunoglobulin G Oral Solution",
+                  "STANDARD_CONCEPT": "S",
+                  "STANDARD_CONCEPT_CAPTION": "Standard",
+                  "INVALID_REASON": "V",
+                  "INVALID_REASON_CAPTION": "Valid",
+                  "CONCEPT_CODE": "OMOP658490",
+                  "DOMAIN_ID": "Drug",
+                  "VOCABULARY_ID": "RxNorm Extension",
+                  "CONCEPT_CLASS_ID": "Clinical Drug Form"
+                },
+                "isExcluded": true,
+                "includeDescendants": true,
+                "includeMapped": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": 117,
+      "type": "CRITERIA_SET",
+      "name": "[EPI_852] ImmunoG Distribution",
+      "domain": "DRUG",
+      "statType": "DISTRIBUTION",
+      "descr": "",
+      "design": [
+        {
+          "criteriaType": "WindowedCriteria",
+          "id": 1092,
+          "name": "Immunoglobuln G ",
+          "aggregate": {
+            "default": true,
+            "additionalColumns": null,
+            "id": 1,
+            "name": "Events count",
+            "domain": null,
+            "function": "COUNT",
+            "expression": "*",
+            "joinTable": null,
+            "joinType": null,
+            "joinCondition": null,
+            "missingMeansZero": true
+          },
+          "expression": {
+            "Criteria": {
+              "DrugExposure": {
+                "CorrelatedCriteria": null,
+                "CodesetId": 0,
+                "First": null,
+                "OccurrenceStartDate": null,
+                "OccurrenceEndDate": null,
+                "DrugType": null,
+                "DrugTypeExclude": false,
+                "StopReason": null,
+                "Refills": null,
+                "Quantity": null,
+                "DaysSupply": null,
+                "RouteConcept": null,
+                "EffectiveDrugDose": null,
+                "DoseUnit": null,
+                "LotNumber": null,
+                "DrugSourceConcept": null,
+                "Age": null,
+                "Gender": null,
+                "ProviderSpecialty": null,
+                "VisitType": null
+              }
+            },
+            "StartWindow": {
+              "Start": {
+                "Days": 30,
+                "Coeff": -1
+              },
+              "End": {
+                "Days": 365,
+                "Coeff": 1
+              },
+              "UseIndexEnd": false,
+              "UseEventEnd": false
+            },
+            "EndWindow": null,
+            "RestrictVisit": false,
+            "IgnoreObservationPeriod": true
+          }
+        }
+      ],
+      "description": "",
+      "conceptSets": [
+        {
+          "id": 0,
+          "name": "immunoglobulin G",
+          "expression": {
+            "items": [
+              {
+                "concept": {
+                  "CONCEPT_ID": 19117912,
+                  "CONCEPT_NAME": "immunoglobulin G",
+                  "STANDARD_CONCEPT": "S",
+                  "STANDARD_CONCEPT_CAPTION": "Standard",
+                  "INVALID_REASON": "V",
+                  "INVALID_REASON_CAPTION": "Valid",
+                  "CONCEPT_CODE": "5666",
+                  "DOMAIN_ID": "Drug",
+                  "VOCABULARY_ID": "RxNorm",
+                  "CONCEPT_CLASS_ID": "Ingredient"
+                },
+                "isExcluded": false,
+                "includeDescendants": true,
+                "includeMapped": false
+              },
+              {
+                "concept": {
+                  "CONCEPT_ID": 43730114,
+                  "CONCEPT_NAME": "Immunoglobulin G Oral Solution",
+                  "STANDARD_CONCEPT": "S",
+                  "STANDARD_CONCEPT_CAPTION": "Standard",
+                  "INVALID_REASON": "V",
+                  "INVALID_REASON_CAPTION": "Valid",
+                  "CONCEPT_CODE": "OMOP658490",
+                  "DOMAIN_ID": "Drug",
+                  "VOCABULARY_ID": "RxNorm Extension",
+                  "CONCEPT_CLASS_ID": "Clinical Drug Form"
+                },
+                "isExcluded": true,
+                "includeDescendants": true,
+                "includeMapped": false
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "parameters": [],
+  "stratas": [],
+  "strataOnly": false,
+  "strataConceptSets": [],
+  "skeletonType": "CohortCharacterizationStudy",
+  "skeletonVersion": "v0.0.1",
+  "organizationName": "OHDSI"
+}
