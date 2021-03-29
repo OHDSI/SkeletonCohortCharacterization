@@ -82,4 +82,44 @@ public class FeatureAnalysisAggregateImpl implements FeatureAnalysisAggregate {
     public boolean isMissingMeansZero() {
         return missingMeansZero;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDomain(FeatureAnalysisDomain domain) {
+        this.domain = domain;
+    }
+
+    public void setFunction(AggregateFunction function) {
+        this.function = function;
+    }
+
+    public void setAdditionalColumns(List<CriteriaColumn> additionalColumns) {
+        this.additionalColumns = additionalColumns;
+    }
+
+    public void setExpression(String expression) {
+        this.expression = expression;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setJoinTable(String joinTable) {
+        this.joinTable = joinTable;
+    }
+
+    public void setJoinCondition(String joinCondition) {
+        this.joinCondition = joinCondition;
+    }
+
+    public void setJoinType(TableJoin joinType) {
+        this.joinType = joinType;
+    }
+
+    public void setMissingMeansZero(boolean missingMeansZero) {
+        this.missingMeansZero = missingMeansZero;
+    }
 }
