@@ -1,11 +1,18 @@
 package org.ohdsi.cohortcharacterization;
 
 import com.github.mjeanroy.dbunit.core.dataset.DataSetFactory;
+import java.util.Arrays;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.dbunit.Assertion;
+import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.CompositeDataSet;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
+import org.dbunit.dataset.datatype.DefaultDataTypeFactory;
+import org.dbunit.dataset.datatype.ToleratedDeltaMap.ToleratedDelta;
+import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory;
 import org.dbunit.operation.DatabaseOperation;
 import org.dbunit.util.TableFormatter;
 import org.junit.BeforeClass;
@@ -27,7 +34,11 @@ public class Characterization_5_0_Test extends AbstractDatabaseTest {
   private static final String CDM_DDL_PATH = "/ddl/cdm_v5.0.sql";
   private static final String RESULTS_DDL_PATH = "/ddl/resultsSchema.sql";
   private static final String CDM_SCHEMA = "cdm";
-  
+  private static final List CC_RESULT_COLS = Arrays.asList("type","fa_type", "cc_generation_id", "analysis_id", "analysis_name", 
+            "covariate_id", "covariate_name", "strata_id", "strata_name",
+            "time_window", "concept_id", "count_value", "avg_value", "ROUND(cast(stdev_value as numeric), 5) as stdev_value",
+            "min_value", "p10_value", "p25_value", "median_value", "p75_value", "p90_value", "max_value",
+            "cohort_definition_id", "aggregate_id", "aggregate_name", "missing_means_zero");  
   @BeforeClass
   public static void beforeClass() {
     jdbcTemplate = new JdbcTemplate(getDataSource());
@@ -109,8 +120,10 @@ public class Characterization_5_0_Test extends AbstractDatabaseTest {
 
     // Validate results
     // Load actual records from cohort table
+
     final ITable ccResultsTable = dbUnitCon.createQueryTable(RESULTS_SCHEMA + ".cc_results", 
-            String.format("SELECT * from %s where cc_generation_id = %d ORDER BY analysis_id, concept_id ", 
+            String.format("SELECT %s from %s where cc_generation_id = %d ORDER BY analysis_id, concept_id ",
+                    StringUtils.join(CC_RESULT_COLS, ","),
                     RESULTS_SCHEMA + ".cc_results",
                     1));
     TableFormatter f = new TableFormatter();
