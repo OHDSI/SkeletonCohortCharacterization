@@ -25,9 +25,15 @@ select
     CAST(@cohortId AS BIGINT) as cohort_definition_id,
     CAST(@executionId AS BIGINT) as cc_generation_id
 into #pwc_result
-from (select count(*) as sum_value from(
-   select person_id from ( @groupQuery ) pi group by pi.person_id) pci) sum,
-  (select count(*) as total from  @temp_database_schema.@totalsTable where cohort_definition_id = @cohortId) totals
+from (
+  select count(*) as sum_value 
+  from (
+    select person_id
+    from ( @groupQuery ) pi 
+    group by pi.person_id
+  ) pci
+) sum,
+(select count(distinct subject_id) as total from  qualified_events) totals
 ;
 
 insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, strata_id, strata_name, cohort_definition_id, cc_generation_id)
