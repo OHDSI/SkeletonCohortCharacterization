@@ -6,7 +6,7 @@ import org.ohdsi.circe.cohortdefinition.CriteriaGroup;
 public class CcStrataImpl implements CohortCharacterizationStrata {
 
 	private String name;
-	private CriteriaGroup criteriaGroup = new CriteriaGroup();
+	private CriteriaGroup criteria = new CriteriaGroup();
 	private Long id;
 
 	@Override
@@ -17,8 +17,7 @@ public class CcStrataImpl implements CohortCharacterizationStrata {
 
 	@Override
 	public CriteriaGroup getCriteria() {
-
-		return criteriaGroup;
+		return criteria;
 	}
 
 	@Override
@@ -32,9 +31,9 @@ public class CcStrataImpl implements CohortCharacterizationStrata {
 		this.name = name;
 	}
 
-	public void setCriteriaGroup(CriteriaGroup criteriaGroup) {
+	public void setCriteria(CriteriaGroup criteria) {
 
-		this.criteriaGroup = criteriaGroup;
+		this.criteria = criteria;
 	}
 
 	public void setId(Long id) {

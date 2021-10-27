@@ -128,12 +128,12 @@ public class CCQueryBuilder {
 	private List<String> getAnalysisQueriesOnCohort(final Integer cohortDefinitionId) {
 
 		final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinitionId);
-		return getSqlQueriesToRun(createFeJsonObject(options, options.resultSchema + "." + cohortTable), cohortDefinitionId);
+		return getSqlQueriesToRun(createFeJsonObject(options, cohortTable), cohortDefinitionId);
 	}
 
 	private String renderCustomAnalysisDesign(FeatureAnalysis fa, Integer cohortId, CohortCharacterizationStrata strata) {
 
-		String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(tempSchema + "." + this.cohortTable);
+		String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(this.cohortTable);
 		Map<String, String> params = cohortCharacterization.getParameters().stream().collect(Collectors.toMap(CohortCharacterizationParam::getName, v -> v.getValue().toString()));
 		params.put("cdm_database_schema", cdmSchema);
 		params.put("cohort_table", cohortTable);
@@ -184,7 +184,7 @@ public class CCQueryBuilder {
 		List<String> queries = new ArrayList<>();
 		List<FeatureAnalysisWithCriteria<? extends BaseCriteriaFeature, Integer>> analysesWithCriteria = getFeAnalysesWithCriteria();
 		if (!analysesWithCriteria.isEmpty()) {
-			String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(tempSchema + "." + this.cohortTable);
+			String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(this.cohortTable);
 			analysesWithCriteria.stream()
 							.map(analysis -> getCriteriaFeaturesQueries(cohortDefinitionId, analysis, cohortTable, strata))
 							.flatMap(Collection::stream)
@@ -251,8 +251,6 @@ public class CCQueryBuilder {
 	private CohortExpressionQueryBuilder.BuildExpressionQueryOptions createDefaultOptions(final Integer id) {
 		final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = new CohortExpressionQueryBuilder.BuildExpressionQueryOptions();
 		options.cdmSchema = cdmSchema;
-		// Target schema
-		options.resultSchema = tempSchema;
 		options.cohortId = id;
 		options.generateStats = false;
 		return options;

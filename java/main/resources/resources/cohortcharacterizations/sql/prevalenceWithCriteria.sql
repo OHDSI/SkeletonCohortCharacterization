@@ -27,7 +27,7 @@ select
 into #pwc_result
 from (select count(*) as sum_value from(
    select person_id from ( @groupQuery ) pi group by pi.person_id) pci) sum,
-  (select count(*) as total from  @temp_database_schema.@totalsTable where cohort_definition_id = @cohortId) totals
+  (select count(*) as total from  @totalsTable where cohort_definition_id = @cohortId) totals
 ;
 
 insert into @results_database_schema.cc_results (type, fa_type, covariate_id, covariate_name, analysis_id, analysis_name, concept_id, count_value, avg_value, strata_id, strata_name, cohort_definition_id, cc_generation_id)

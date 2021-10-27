@@ -5,14 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.dbunit.Assertion;
-import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.CompositeDataSet;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
-import org.dbunit.dataset.datatype.DefaultDataTypeFactory;
-import org.dbunit.dataset.datatype.ToleratedDeltaMap.ToleratedDelta;
-import org.dbunit.ext.postgresql.PostgresqlDataTypeFactory;
 import org.dbunit.operation.DatabaseOperation;
 import org.dbunit.util.TableFormatter;
 import org.junit.BeforeClass;
@@ -66,7 +62,7 @@ public class Characterization_5_0_Test extends AbstractDatabaseTest {
     // condition occurrence persistend for 180 days, censor window between 2000-04-01 to 2000-09-01
     // cohort 1 will use the default expression from JSON.
     String characterizationDesign = ResourceHelper.GetResourceAsString("/cohortcharacterization/criteriaPrevalenceTest.json");
-    CCQueryBuilder builder = new CCQueryBuilder(characterizationDesign, "cohort", "SID", CDM_SCHEMA, RESULTS_SCHEMA, CDM_SCHEMA, RESULTS_SCHEMA, 1);
+    CCQueryBuilder builder = new CCQueryBuilder(characterizationDesign, RESULTS_SCHEMA + ".cohort", "SID", CDM_SCHEMA, RESULTS_SCHEMA, CDM_SCHEMA, RESULTS_SCHEMA, 1);
     String ccSql = SqlTranslate.translateSql(builder.build(), "postgresql");
 
     // execute on database, expect no errors
@@ -90,7 +86,53 @@ public class Characterization_5_0_Test extends AbstractDatabaseTest {
     Assertion.assertEquals(expectedDataSet, actualDataSet);     
 
   }
-  
+
+  @Test
+  public void criteriaPrevalenceStrataTest() throws Exception {
+    final String RESULTS_SCHEMA = "criteria_prevalence_strata"; // this must be all lower case for DBUnit to work
+    final String[] testDataSetsPrep = new String[] { 
+      "/datasets/vocabulary.json",
+      "/cohortcharacterization/criteriaPrevalenceStrataTest_PREP.json" 
+    };
+
+    // prepare results schema for the specified results schema
+    prepareSchema(RESULTS_SCHEMA, RESULTS_DDL_PATH);
+
+    final IDatabaseConnection dbUnitCon = getConnection();
+
+    // load test data into DB.
+    final IDataSet dsPrep = DataSetFactory.createDataSet(testDataSetsPrep);
+    DatabaseOperation.CLEAN_INSERT.execute(dbUnitCon, dsPrep); // clean load of the DB. Careful, clean means "delete the old stuff"
+
+    // load the default expression: 
+    // condition occurrence persistend for 180 days, censor window between 2000-04-01 to 2000-09-01
+    // cohort 1 will use the default expression from JSON.
+    String characterizationDesign = ResourceHelper.GetResourceAsString("/cohortcharacterization/criteriaPrevalenceStrataTest.json");
+    CCQueryBuilder builder = new CCQueryBuilder(characterizationDesign, RESULTS_SCHEMA + ".cohort", "SID", CDM_SCHEMA, RESULTS_SCHEMA, CDM_SCHEMA, RESULTS_SCHEMA, 1);
+    String ccSql = SqlTranslate.translateSql(builder.build(), "postgresql");
+
+    // execute on database, expect no errors
+    jdbcTemplate.batchUpdate(SqlSplit.splitSql(ccSql));
+
+    // Validate results
+    // Load actual records from cohort table
+    final ITable ccResultsTable = dbUnitCon.createQueryTable(RESULTS_SCHEMA + ".cc_results", 
+            String.format("SELECT * from %s where cc_generation_id = %d ORDER BY analysis_id, concept_id ", 
+                    RESULTS_SCHEMA + ".cc_results",
+                    1));
+    TableFormatter f = new TableFormatter();
+    String ccResultsText = f.format(ccResultsTable);
+    final IDataSet actualDataSet = new CompositeDataSet(new ITable[] {ccResultsTable});
+
+    // Load expected data from an XML dataset
+    final String[] testDataSetsVerify = new String[] {"/cohortcharacterization/criteriaPrevalenceStrataTest_VERIFY.json"};
+    final IDataSet expectedDataSet = DataSetFactory.createDataSet(testDataSetsVerify);
+
+    // Assert actual database table match expected table
+    Assertion.assertEquals(expectedDataSet, actualDataSet);     
+
+  }
+	
   @Test
   public void criteriaDistributionTest() throws Exception {
     final String RESULTS_SCHEMA = "criteria_dist"; // this must be all lower case for DBUnit to work
@@ -112,7 +154,7 @@ public class Characterization_5_0_Test extends AbstractDatabaseTest {
     // condition occurrence persistend for 180 days, censor window between 2000-04-01 to 2000-09-01
     // cohort 1 will use the default expression from JSON.
     String characterizationDesign = ResourceHelper.GetResourceAsString("/cohortcharacterization/criteriaDistributionTest.json");
-    CCQueryBuilder builder = new CCQueryBuilder(characterizationDesign, "cohort", "SID", CDM_SCHEMA, RESULTS_SCHEMA, CDM_SCHEMA, RESULTS_SCHEMA, 1);
+    CCQueryBuilder builder = new CCQueryBuilder(characterizationDesign, RESULTS_SCHEMA + ".cohort", "SID", CDM_SCHEMA, RESULTS_SCHEMA, CDM_SCHEMA, RESULTS_SCHEMA, 1);
     String ccSql = SqlTranslate.translateSql(builder.build(), "postgresql");
 
     // execute on database, expect no errors
