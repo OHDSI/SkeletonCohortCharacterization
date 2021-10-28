@@ -12,6 +12,7 @@ import org.ohdsi.circe.cohortdefinition.ConceptSet;
 
 public class CohortCharacterizationImpl implements CohortCharacterization {
 
+	private Long id;
 	private String name;
 	private List<CohortImpl> cohorts = new ArrayList<>();
 	private List<FeatureAnalysisImpl> featureAnalyses = new ArrayList<>();
@@ -19,6 +20,12 @@ public class CohortCharacterizationImpl implements CohortCharacterization {
 	private List<CcStrataImpl> stratas = new ArrayList<>();
 	private Boolean strataOnly;
 	private List<ConceptSet> conceptSets = new ArrayList<>();
+
+	@Override
+	public Long getId() {
+
+		return id;
+	}
 
 	@Override
 	public String getName() {
