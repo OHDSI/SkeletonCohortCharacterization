@@ -1,0 +1,273 @@
+{
+  "name": "Criteria Prevalence Test",
+  "cohorts": [
+    {
+      "id": 1,
+      "name": "Cohort 1",
+      "expression": {
+        "cdmVersionRange": ">=5.0.0",
+        "PrimaryCriteria": {
+          "CriteriaList": [
+            {
+              "ConditionOccurrence": {
+                "CodesetId": 0,
+                "ConditionTypeExclude": false
+              }
+            }
+          ],
+          "ObservationWindow": {
+            "PriorDays": 0,
+            "PostDays": 0
+          },
+          "PrimaryCriteriaLimit": {
+            "Type": "All"
+          }
+        },
+        "ConceptSets": [
+          {
+            "id": 0,
+            "name": "Conceptset 1",
+            "expression": {
+              "items": [
+                {
+									"concept": {
+										"CONCEPT_CLASS_ID": "Clinical Finding",
+										"CONCEPT_CODE": "C1P1",
+										"CONCEPT_ID": 2,
+										"CONCEPT_NAME": "Child 1 [Parent: 1]",
+										"DOMAIN_ID": "CONDITION",
+										"INVALID_REASON": "V",
+										"INVALID_REASON_CAPTION": "Valid",
+										"STANDARD_CONCEPT": "S",
+										"STANDARD_CONCEPT_CAPTION": "Standard",
+										"VOCABULARY_ID": "TestVocab"
+									},
+                  "isExcluded": false,
+                  "includeDescendants": true,
+                  "includeMapped": false
+                }
+              ]
+            }
+          }
+        ],
+        "QualifiedLimit": {
+          "Type": "First"
+        },
+        "ExpressionLimit": {
+          "Type": "First"
+        },
+        "InclusionRules": [
+          {
+            "name": "Age < 18 years ",
+            "expression": {
+              "Type": "ALL",
+              "CriteriaList": [],
+              "DemographicCriteriaList": [
+                {
+                  "Age": {
+                    "Value": 18,
+                    "Op": "lt"
+                  }
+                }
+              ],
+              "Groups": []
+            }
+          },
+          {
+            "name": "With 30d prior",
+            "expression": {
+              "Type": "ALL",
+              "CriteriaList": [
+                {
+                  "Criteria": {
+                    "ObservationPeriod": {}
+                  },
+                  "StartWindow": {
+                    "Start": {
+                      "Coeff": -1
+                    },
+                    "End": {
+                      "Days": 30,
+                      "Coeff": -1
+                    },
+                    "UseIndexEnd": false,
+                    "UseEventEnd": false
+                  },
+                  "RestrictVisit": false,
+                  "IgnoreObservationPeriod": false,
+                  "Occurrence": {
+                    "Type": 2,
+                    "Count": 1,
+                    "IsDistinct": false
+                  }
+                }
+              ],
+              "DemographicCriteriaList": [],
+              "Groups": []
+            }
+          }
+        ],
+        "CensoringCriteria": [],
+        "CollapseSettings": {
+          "CollapseType": "ERA",
+          "EraPad": 0
+        },
+        "CensorWindow": {}
+      }
+    }
+  ],
+  "featureAnalyses": [
+    {
+      "id": 101,
+      "type": "CRITERIA_SET",
+      "name": "Criteria Prevalence Feature",
+      "domain": "CONDITION",
+      "statType": "PREVALENCE",
+      "descr": "",
+      "design": [
+        {
+          "criteriaType": "CriteriaGroup",
+          "id": 1,
+          "name": "Target Drug Exposure",
+          "aggregate": {
+            "default": true,
+            "additionalColumns": null,
+            "id": 1,
+            "name": "Events count",
+            "domain": null,
+            "function": "COUNT",
+            "expression": "*",
+            "joinTable": null,
+            "joinType": null,
+            "joinCondition": null,
+            "missingMeansZero": true
+          },
+          "expression": {
+            "Type": "ALL",
+            "Count": null,
+            "CriteriaList": [
+              {
+                "Criteria": {
+                  "DrugExposure": {
+                    "CorrelatedCriteria": null,
+                    "CodesetId": 0,
+                    "First": null,
+                    "OccurrenceStartDate": null,
+                    "OccurrenceEndDate": null,
+                    "DrugType": null,
+                    "DrugTypeExclude": false,
+                    "StopReason": null,
+                    "Refills": null,
+                    "Quantity": null,
+                    "DaysSupply": null,
+                    "RouteConcept": null,
+                    "EffectiveDrugDose": null,
+                    "DoseUnit": null,
+                    "LotNumber": null,
+                    "DrugSourceConcept": null,
+                    "Age": null,
+                    "Gender": null,
+                    "ProviderSpecialty": null,
+                    "VisitType": null
+                  }
+                },
+                "StartWindow": {
+                  "Start": {
+                    "Days": 30,
+                    "Coeff": -1
+                  },
+                  "End": {
+                    "Days": 365,
+                    "Coeff": 1
+                  },
+                  "UseIndexEnd": false,
+                  "UseEventEnd": false
+                },
+                "EndWindow": null,
+                "RestrictVisit": false,
+                "IgnoreObservationPeriod": false,
+                "Occurrence": {
+                  "Type": 2,
+                  "Count": 1,
+                  "IsDistinct": false,
+                  "CountColumn": null
+                }
+              }
+            ],
+            "DemographicCriteriaList": [],
+            "Groups": []
+          }
+        }
+      ],
+      "description": "",
+      "conceptSets": [
+        {
+          "id": 0,
+          "name": "Drug Exposure",
+          "expression": {
+            "items": [
+              {
+                "concept": {
+                  "CONCEPT_ID": 5,
+                  "CONCEPT_NAME": "Drug Child 1",
+                  "STANDARD_CONCEPT": "S",
+                  "STANDARD_CONCEPT_CAPTION": "Standard",
+                  "INVALID_REASON": "V",
+                  "INVALID_REASON_CAPTION": "Valid",
+                  "CONCEPT_CODE": "D1C1",
+                  "DOMAIN_ID": "DRUG",
+                  "VOCABULARY_ID": "TestVocab",
+                  "CONCEPT_CLASS_ID": "Clinical Finding"
+                },
+                "isExcluded": false,
+                "includeDescendants": true,
+                "includeMapped": false
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "parameters": [],
+  "stratas": [
+    {
+      "id": 1,
+      "name": "Female",
+      "criteria": {
+        "Type": "ALL",
+        "Count": null,
+        "CriteriaList": [],
+        "DemographicCriteriaList": [
+          {
+            "Age": null,
+            "Gender": [
+              {
+                "CONCEPT_ID": 8532,
+                "CONCEPT_NAME": "FEMALE",
+                "STANDARD_CONCEPT": null,
+                "STANDARD_CONCEPT_CAPTION": "Unknown",
+                "INVALID_REASON": null,
+                "INVALID_REASON_CAPTION": "Unknown",
+                "CONCEPT_CODE": "F",
+                "DOMAIN_ID": "Gender",
+                "VOCABULARY_ID": "Gender",
+                "CONCEPT_CLASS_ID": null
+              }
+            ],
+            "Race": null,
+            "Ethnicity": null,
+            "OccurrenceStartDate": null,
+            "OccurrenceEndDate": null
+          }
+        ],
+        "Groups": []
+      }
+    }
+  ],
+  "strataOnly": false,
+  "strataConceptSets": [],
+  "skeletonType": "CohortCharacterizationStudy",
+  "skeletonVersion": "v0.0.1",
+  "organizationName": "OHDSI"
+}

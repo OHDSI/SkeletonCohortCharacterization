@@ -1,0 +1,31 @@
+{
+  "criteria_dist.cc_results": [
+    {
+      "type": "DISTRIBUTION",
+      "fa_type": "CRITERIA_SET",
+      "cc_generation_id": 1,
+      "analysis_id": 102,
+      "analysis_name": "Criteria Distribution",
+      "covariate_id": 1,
+      "covariate_name": "Target Drug Exposure",
+      "strata_id": 0,
+      "strata_name": "",
+      "time_window": null,
+      "concept_id": 0,
+      "count_value": 5,
+      "avg_value": 3.0,
+      "stdev_value": 1.58114,
+      "min_value":1,
+      "p10_value":1,
+      "p25_value":2,
+      "median_value":3,
+      "p75_value": 4,
+      "p90_value":5,
+      "max_value":5,
+      "cohort_definition_id": 1,
+      "aggregate_id": 1,
+      "aggregate_name": "Events count",
+      "missing_means_zero": 1
+    }
+  ]
+}
