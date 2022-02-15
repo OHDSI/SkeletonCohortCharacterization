@@ -6,7 +6,7 @@
 
     <groupId>org.ohdsi</groupId>
     <artifactId>SkeletonCohortCharacterization</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.1-SNAPSHOT</version>
     <build>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         <outputDirectory>${basedir}/target/classes</outputDirectory>
@@ -73,16 +73,6 @@
         <test.dir>test</test.dir>
         <arachne.version>1.16.2-SNAPSHOT</arachne.version>
     </properties>
-    <distributionManagement>
-        <repository>
-            <id>internal</id>
-            <url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <url>http://repo.ohdsi.org:8085/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
     <repositories>
         <repository>
             <id>ohdsi</id>
