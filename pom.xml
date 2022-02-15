@@ -82,16 +82,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<arachne.version>1.16.3</arachne.version>
 	</properties>
-	<distributionManagement>
-		<repository>
-			<id>internal</id>
-			<url>http://repo.ohdsi.org:8085/nexus/content/repositories/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<url>http://repo.ohdsi.org:8085/nexus/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
+
 	<repositories>
 		<repository>
 			<id>ohdsi</id>
