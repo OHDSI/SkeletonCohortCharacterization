@@ -6,12 +6,23 @@
 
 	<groupId>org.ohdsi</groupId>
 	<artifactId>SkeletonCohortCharacterization</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.0.RELEASE</version>
-	</parent>
+	<version>2.1.0-SNAPSHOT</version>
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<spring.dependencies.version>2.3.0.RELEASE</spring.dependencies.version>
+	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring.dependencies.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<build>
 		<sourceDirectory>${basedir}/java/main/java</sourceDirectory>
 		<outputDirectory>${basedir}/target/classes</outputDirectory>
