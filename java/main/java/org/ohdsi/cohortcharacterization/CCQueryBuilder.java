@@ -141,8 +141,14 @@ public class CCQueryBuilder {
         final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinitionId);
         List<String> queries = new LinkedList<>();
         queries.addAll(getSqlQueriesToRun(createFeJsonObject(options, cohortTable), cohortDefinitionId));
-        JSONObject temporalJsonObject = createFeJsonObject(createDefaultOptions(cohortDefinitionId), cohortTable, false, includeAnnual);
-        queries.addAll(getSqlQueriesToRun(temporalJsonObject, cohortDefinitionId));
+        if (includeTemporal) {
+            JSONObject temporalJsonObject = createFeJsonObject(createDefaultOptions(cohortDefinitionId), cohortTable, includeTemporal, false);
+            queries.addAll(getSqlQueriesToRun(temporalJsonObject, cohortDefinitionId));
+        }
+        if (includeAnnual) {
+            JSONObject temporalJsonObject = createFeJsonObject(createDefaultOptions(cohortDefinitionId), cohortTable, false, includeAnnual);
+            queries.addAll(getSqlQueriesToRun(temporalJsonObject, cohortDefinitionId));
+        }
         return queries;
     }
 
@@ -234,36 +240,50 @@ public class CCQueryBuilder {
         boolean temporal = isTemporal(jsonObject);
         boolean temporalAnnual = jsonObject.has("temporalPeriod") && jsonObject.getString("temporalPeriod").equals("annual");
 
-        if (!temporal && ccHasPresetDistributionAnalyses()) {
+        if (!temporal && !temporalAnnual && ccHasPresetDistributionAnalyses()) {
             final String distColumns = "cohort_definition_id, covariate_id, count_value, min_value, max_value, average_value, "
                     + "standard_deviation, median_value, p10_value, p25_value, p75_value, p90_value";
-            final String distFeatures = String.format(cohortWrapper, cohortId, distColumns,
-                    StringUtils.stripEnd(jsonObject.getString("sqlQueryContinuousFeatures"), ";"));
-            queries.addAll(prepareStatements(distributionRetrievingQuery, sessionId, ArrayUtils.addAll(RETRIEVING_PARAMETERS, "strataId", "strataName"),
-                    new String[]{distFeatures, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId), "cc_results",
-                            String.valueOf(strataId), QuoteUtils.escapeSql(strataName)}));
+            if (jsonObject.has("sqlQueryContinuousFeatures")) {
+                final String distFeatures = String.format(cohortWrapper, cohortId, distColumns,
+                        StringUtils.stripEnd(jsonObject.getString("sqlQueryContinuousFeatures"), ";"));
+                queries.addAll(prepareStatements(distributionRetrievingQuery, sessionId, ArrayUtils.addAll(RETRIEVING_PARAMETERS, "strataId", "strataName"),
+                        new String[]{distFeatures, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId), "cc_results",
+                                String.valueOf(strataId), QuoteUtils.escapeSql(strataName)}));
+            }
         }
         if (ccHasPresetPrevalenceAnalyses()) {
-            final String featureColumns = Stream.of(
-                            "cohort_definition_id",
-                            "covariate_id",
-                            "sum_value",
-                            "average_value",
-                            temporal ? "time_id" : null,
-                            temporalAnnual ? "event_year" : null
-                    )
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.joining(","));
-            final String features = String.format(cohortWrapper, cohortId, featureColumns,
-                    StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
-            String resultsTable = temporal ? "cc_temporal_results" : (temporalAnnual ? "cc_temporal_annual_results" : "cc_results");
-            String[] paramValues = new String[]{features, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId),
-                    resultsTable, String.valueOf(temporal), String.valueOf(temporalAnnual), String.valueOf(strataId), QuoteUtils.escapeSql(strataName)};
-            String[] parameters = ArrayUtils.addAll(RETRIEVING_PARAMETERS, "temporal", "temporal_annual", "strataId", "strataName");
-            queries.addAll(prepareStatements(prevalenceRetrievingQuery, sessionId, parameters, paramValues));
+            final String featureColumns = String.join(",",
+                    "cohort_definition_id",
+                    "covariate_id",
+                    "sum_value",
+                    "average_value"
+            );
+            if (temporal) {
+                final String features = String.format(cohortWrapper, cohortId, featureColumns + ", time_id",
+                        StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
+                generateInsertResults(cohortId, temporal, false, features, featureRefs, analysisRefs, strataId, strataName, queries);
+            }
+            if (temporalAnnual && jsonObject.has("sqlQueryFeatures")) {
+                final String features = String.format(cohortWrapper, cohortId, featureColumns + ", event_year",
+                        StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
+                generateInsertResults(cohortId, false, temporalAnnual, features, featureRefs, analysisRefs, strataId, strataName, queries);
+            }
+            if (!temporal && !temporalAnnual) {
+                final String features = String.format(cohortWrapper, cohortId, featureColumns,
+                        StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
+                generateInsertResults(cohortId, false, false, features, featureRefs, analysisRefs, strataId, strataName, queries);
+            }
         }
 
         return queries;
+    }
+
+    private void generateInsertResults(Integer cohortId, boolean temporal, boolean temporalAnnual, String features, String featureRefs, String analysisRefs, Long strataId, String strataName, List<String> queries) {
+        String resultsTable = temporal ? "cc_temporal_results" : (temporalAnnual ? "cc_temporal_annual_results" : "cc_results");
+        String[] paramValues = new String[]{features, featureRefs, analysisRefs, String.valueOf(cohortId), String.valueOf(jobId),
+                resultsTable, String.valueOf(temporal), String.valueOf(temporalAnnual), String.valueOf(strataId), QuoteUtils.escapeSql(strataName)};
+        String[] parameters = ArrayUtils.addAll(RETRIEVING_PARAMETERS, "temporal", "temporal_annual", "strataId", "strataName");
+        queries.addAll(prepareStatements(prevalenceRetrievingQuery, sessionId, parameters, paramValues));
     }
 
     private boolean isTemporal(JSONObject jsonObject) {
@@ -584,24 +604,29 @@ public class CCQueryBuilder {
         final JSONObject defaultSettings = new JSONObject(temporal ? FeatureExtraction.getDefaultPrespecTemporalAnalyses() : FeatureExtraction.getDefaultPrespecAnalyses());
         Map<String, FeatureExtraction.PrespecAnalysis> prespecAnalysisMap = FeatureExtraction.getNameToPrespecAnalysis();
         Map<String, FeatureExtraction.PrespecAnalysis> temporalAnalysisMap = FeatureExtraction.getNameToPrespecTemporalAnalysis();
-        Map<String, FeatureExtraction.PrespecAnalysis> analysisMap = temporal ? temporalAnalysisMap : prespecAnalysisMap;
-        analysisMap.keySet().forEach(defaultSettings::remove);
+        Map<String, FeatureExtraction.PrespecAnalysis> annualAnalysisMap = FeatureExtraction.getNameToPrespecTemporalAnnualAnalysis();
+        Map<String, FeatureExtraction.PrespecAnalysis> analysisMap = temporal ? temporalAnalysisMap : (temporalAnnual ? annualAnalysisMap : prespecAnalysisMap);
+        Stream.of(prespecAnalysisMap.keySet(), temporalAnalysisMap.keySet(), annualAnalysisMap.keySet()).flatMap(Set::stream).forEach(defaultSettings::remove);
         defaultSettings.put("temporal", temporal);
         defaultSettings.put("temporalSequence", false);
         defaultSettings.put("temporalAnnual", temporalAnnual);
 
-        Function<? super FeatureAnalysis, Integer> toAnalysisId = fa -> prespecAnalysisMap.keySet().stream()
-                .filter(a -> Objects.equals(a, fa.getDesign()))
-                .findFirst()
-                .map(a -> prespecAnalysisMap.get(a).analysisId)
-                .orElse(null);
+        Function<FeatureAnalysis, Predicate<String>> designEquals = fa -> a -> Objects.equals(a, fa.getDesign());
+        Function<? super FeatureAnalysis, Integer> toAnalysisId = temporal ?
+                mapFeatureAnalysisId(temporalAnalysisMap, fa -> a -> fa.getDesign().toString().startsWith(a)) :
+                (
+                        temporalAnnual ? mapFeatureAnalysisId(annualAnalysisMap, designEquals) : mapFeatureAnalysisId(prespecAnalysisMap, designEquals)
+                );
 
-        Predicate<? super FeatureAnalysis> predicate = temporal ?
+        Map<Integer, FeatureExtraction.PrespecAnalysis> analysisIdMap = analysisMap.values().stream()
+                .collect(Collectors.toMap(fa -> fa.analysisId, Function.identity()));
+
+        Predicate<? super FeatureAnalysis> predicate = temporal || temporalAnnual ?
                 fa -> analysisMap.values().stream().anyMatch(a -> Objects.equals(a.analysisId, toAnalysisId.apply(fa))) :
                 fa -> Objects.equals(fa.getType(), StandardFeatureAnalysisType.PRESET);
-        Function<? super FeatureAnalysis, String> mapper = temporal ?
-                fa -> analysisMap.entrySet().stream().filter(a -> Objects.equals(a.getValue().analysisId, toAnalysisId.apply(fa))).findFirst()
-                        .map(Map.Entry::getKey).orElseThrow(() -> new RuntimeException("Analysis " + fa.getDesign() + " not found")) :
+        Function<? super FeatureAnalysis, String> mapper = temporal || temporalAnnual ?
+                fa -> Optional.ofNullable(analysisIdMap.get(toAnalysisId.apply(fa))).map(a -> a.analysisName)
+                        .orElseThrow(() -> new RuntimeException(MessageFormat.format("Analysis [{0}] not found", fa.getDesign()))) :
                 fa -> ((FeatureAnalysis<String, Integer>) fa).getDesign();
         cohortCharacterization.getParameters().forEach(param -> defaultSettings.put(param.getName(), param.getValue()));
         cohortCharacterization.getFeatureAnalyses()
@@ -611,6 +636,14 @@ public class CCQueryBuilder {
                 .forEach(analysis -> defaultSettings.put(analysis, Boolean.TRUE));
 
         return defaultSettings.toString();
+    }
+
+    private Function<? super FeatureAnalysis, Integer> mapFeatureAnalysisId(Map<String, FeatureExtraction.PrespecAnalysis> analysisMap, Function<FeatureAnalysis, Predicate<String>> predicate) {
+        return  fa -> analysisMap.keySet().stream()
+                .filter(predicate.apply(fa))
+                .findFirst()
+                .map(a -> analysisMap.get(a).analysisId)
+                .orElse(null);
     }
 
 }
