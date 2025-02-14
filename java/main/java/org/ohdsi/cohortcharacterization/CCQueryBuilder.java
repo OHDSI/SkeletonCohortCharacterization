@@ -87,35 +87,23 @@ public class CCQueryBuilder {
 
     private final CohortCharacterization cohortCharacterization;
     private final String cohortTable;
-    private final String cohortSchema;
     private final String sessionId;
     private final boolean includeAnnual;
     private final boolean includeTemporal;
-    private String cdmSchema;
-    private String resultsSchema;
-    private String vocabularySchema;
-    private String tempSchema;
-    private Long jobId;
+    private final String cdmSchema;
+    private final String resultsSchema;
+    private final String vocabularySchema;
+    private final String tempSchema;
+    private final Long jobId;
 
     private final CohortExpressionQueryBuilder queryBuilder;
 
     public CCQueryBuilder(String design, String cohortTable, String sessionId, String cdmSchema, String resultsSchema, String vocabularySchema, String tempSchema, long jobId) {
-        this(Utils.deserialize(design, CohortCharacterizationImpl.class), cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, jobId, resultsSchema, false, false);
+        this(Utils.deserialize(design, CohortCharacterizationImpl.class), cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, jobId, false, false);
     }
-
-    public CCQueryBuilder(CohortCharacterization design, String cohortTable, String sessionId, String cdmSchema, String resultsSchema, String vocabularySchema, String tempSchema, long jobId, boolean includeAnnual, boolean includeTemporal) {
-
-        this(design, cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, jobId, resultsSchema, includeAnnual, includeTemporal);
-    }
-
-    public CCQueryBuilder(String design, String cohortTable, String sessionId, String cdmSchema, String resultsSchema, String vocabularySchema, String tempSchema, long jobId, String cohortSchema) {
-        this(Utils.deserialize(design, CohortCharacterizationImpl.class), cohortTable, sessionId, cdmSchema, resultsSchema, vocabularySchema, tempSchema, jobId, cohortSchema, false, false);
-    }
-
-    public CCQueryBuilder(CohortCharacterization cohortCharacterization, String cohortTable, String sessionId, String cdmSchema, String resultsSchema, String vocabularySchema, String tempSchema, Long jobId, String cohortSchema, boolean includeAnnual, boolean includeTemporal) {
+    public CCQueryBuilder(CohortCharacterization cohortCharacterization, String cohortTable, String sessionId, String cdmSchema, String resultsSchema, String vocabularySchema, String tempSchema, Long jobId, boolean includeAnnual, boolean includeTemporal) {
         this.cohortCharacterization = cohortCharacterization;
         this.cohortTable = cohortTable;
-        this.cohortSchema = cohortSchema;
         this.sessionId = sessionId;
         this.cdmSchema = cdmSchema;
         this.resultsSchema = resultsSchema;
@@ -594,7 +582,7 @@ public class CCQueryBuilder {
     private JSONObject createFeJsonObject(final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options, final String cohortTable, boolean temporal, boolean temporalAnnual) {
         FeatureExtraction.init(null);
         String settings = buildSettings(temporal, temporalAnnual);
-        String sqlJson = FeatureExtraction.createSql(settings, true, tempSchema + "." + cohortTable,
+        String sqlJson = FeatureExtraction.createSql(settings, true, cohortTable,
                 "subject_id", options.cohortId, options.cdmSchema);
         return new JSONObject(sqlJson);
     }
