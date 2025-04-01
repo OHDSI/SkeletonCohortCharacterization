@@ -246,7 +246,7 @@ public class CCQueryBuilder {
                     "sum_value",
                     "average_value"
             );
-            if (temporal) {
+            if (temporal && jsonObject.has("sqlQueryFeatures")) {
                 final String features = String.format(cohortWrapper, cohortId, featureColumns + ", time_id",
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
                 generateInsertResults(cohortId, temporal, false, features, featureRefs, analysisRefs, strataId, strataName, queries);
@@ -256,7 +256,7 @@ public class CCQueryBuilder {
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
                 generateInsertResults(cohortId, false, temporalAnnual, features, featureRefs, analysisRefs, strataId, strataName, queries);
             }
-            if (!temporal && !temporalAnnual) {
+            if (!temporal && !temporalAnnual && jsonObject.has("sqlQueryFeatures")) {
                 final String features = String.format(cohortWrapper, cohortId, featureColumns,
                         StringUtils.stripEnd(jsonObject.getString("sqlQueryFeatures"), ";"));
                 generateInsertResults(cohortId, false, false, features, featureRefs, analysisRefs, strataId, strataName, queries);
