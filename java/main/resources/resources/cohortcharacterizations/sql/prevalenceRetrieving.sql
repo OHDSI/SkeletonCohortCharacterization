@@ -21,4 +21,4 @@ insert into @results_database_schema.@results_table (type, fa_type, covariate_id
     join (@analysisRefs) ar
       on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id
     {@temporal} ? {join #time_period t on t.time_id = f.time_id}
-    left join @cdm_database_schema.concept c on c.concept_id = fr.concept_id;
+    left join @vocabulary_database_schema.concept c on c.concept_id = fr.concept_id;

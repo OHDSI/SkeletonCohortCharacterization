@@ -26,4 +26,4 @@ insert into @results_database_schema.cc_results (type, fa_type, covariate_id, co
     join (@featureRefs) fr on fr.covariate_id = f.covariate_id and fr.cohort_definition_id = f.cohort_definition_id
     join (@analysisRefs) ar
       on ar.analysis_id = fr.analysis_id and ar.cohort_definition_id = fr.cohort_definition_id
-    left join @cdm_database_schema.concept c on c.concept_id = fr.concept_id;
+    left join @vocabulary_database_schema.concept c on c.concept_id = fr.concept_id;
