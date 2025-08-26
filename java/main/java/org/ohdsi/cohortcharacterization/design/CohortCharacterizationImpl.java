@@ -20,6 +20,11 @@ public class CohortCharacterizationImpl implements CohortCharacterization {
 	private List<CcStrataImpl> stratas = new ArrayList<>();
 	private Boolean strataOnly;
 	private List<ConceptSet> conceptSets = new ArrayList<>();
+  private String version = null;
+  private String organizationName = null;
+  private String packageName = null;
+  private String skeletonType = "";
+  private String skeletonVersion = "v0.0.1";	
 
 	@Override
 	public Long getId() {
@@ -103,4 +108,46 @@ public class CohortCharacterizationImpl implements CohortCharacterization {
 
 		this.conceptSets = conceptSets;
 	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getOrganizationName() {
+		return organizationName;
+	}
+
+	public void setOrganizationName(String organizationName) {
+		this.organizationName = organizationName;
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
+	}
+
+	public String getSkeletonType() {
+		return skeletonType;
+	}
+
+	public void setSkeletonType(String skeletonType) {
+		this.skeletonType = skeletonType;
+	}
+
+	public String getSkeletonVersion() {
+		return skeletonVersion;
+	}
+
+	public void setSkeletonVersion(String skeletonVersion) {
+		this.skeletonVersion = skeletonVersion;
+	}
+	
+	
 }
