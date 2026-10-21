@@ -11,6 +11,7 @@ import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
 import org.dbunit.operation.DatabaseOperation;
 import org.dbunit.util.TableFormatter;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.ohdsi.circe.helper.ResourceHelper;
@@ -85,6 +86,48 @@ public class Characterization_5_0_Test extends AbstractDatabaseTest {
     // Assert actual database table match expected table
     Assertion.assertEquals(expectedDataSet, actualDataSet);     
 
+  }
+
+  @Test
+  public void criteriaPrevalenceMultiEntryTest() throws Exception {
+    final String RESULTS_SCHEMA = "criteria_prevalence_multi"; // this must be all lower case for DBUnit to work
+    final String[] testDataSetsPrep = new String[] {
+      "/datasets/vocabulary.json",
+      "/cohortcharacterization/criteriaPrevalenceMultiEntryTest_PREP.json"
+    };
+
+    prepareSchema(RESULTS_SCHEMA, RESULTS_DDL_PATH);
+
+    final IDatabaseConnection dbUnitCon = getConnection();
+
+    final IDataSet dsPrep = DataSetFactory.createDataSet(testDataSetsPrep);
+    DatabaseOperation.CLEAN_INSERT.execute(dbUnitCon, dsPrep);
+
+    // person 2 has a second, later cohort entry whose window contains a drug exposure.
+    // Only the earliest entry per person is characterized, so person 2 must not be counted (1 of 4, not 2 of 4).
+    String characterizationDesign = ResourceHelper.GetResourceAsString("/cohortcharacterization/criteriaPrevalenceTest.json");
+    CCQueryBuilder builder = new CCQueryBuilder(characterizationDesign, RESULTS_SCHEMA + ".cohort", "SID", CDM_SCHEMA, RESULTS_SCHEMA, CDM_SCHEMA, RESULTS_SCHEMA, 1);
+    String ccSql = SqlTranslate.translateSql(builder.build(), "postgresql");
+
+    jdbcTemplate.batchUpdate(SqlSplit.splitSql(ccSql));
+
+    final ITable ccResultsTable = dbUnitCon.createQueryTable(RESULTS_SCHEMA + ".cc_results",
+            String.format("SELECT * from %s where cc_generation_id = %d ORDER BY analysis_id, concept_id ",
+                    RESULTS_SCHEMA + ".cc_results",
+                    1));
+    final IDataSet actualDataSet = new CompositeDataSet(new ITable[] {ccResultsTable});
+
+    final String[] testDataSetsVerify = new String[] {"/cohortcharacterization/criteriaPrevalenceMultiEntryTest_VERIFY.json"};
+    final IDataSet expectedDataSet = DataSetFactory.createDataSet(testDataSetsVerify);
+
+    Assertion.assertEquals(expectedDataSet, actualDataSet);
+
+    // the source cohort table is left untouched and the derived earliest-entry table is dropped
+    Assert.assertEquals(Integer.valueOf(5),
+            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + RESULTS_SCHEMA + ".cohort", Integer.class));
+    Assert.assertEquals(Integer.valueOf(0),
+            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '"
+                    + RESULTS_SCHEMA + "' AND table_name = 'cf_sid'", Integer.class));
   }
 
   @Test
