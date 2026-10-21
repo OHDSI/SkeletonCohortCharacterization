@@ -40,7 +40,7 @@
       "time_window": null,
       "concept_id": 0,
       "count_value": 1,
-      "avg_value": 0.25,
+      "avg_value": 1.0,
       "stdev_value": null,
       "min_value":null,
       "p10_value":null,

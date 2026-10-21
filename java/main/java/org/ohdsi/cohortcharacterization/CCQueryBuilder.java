@@ -62,6 +62,8 @@ public class CCQueryBuilder {
 
     private static final String TIME_PERIOD_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/createTimePeriod.sql");
 
+    private static final String EARLIEST_ENTRY_QUERY = ResourceHelper.GetResourceAsString("/resources/cohortcharacterizations/sql/earliestEntryCohort.sql");
+
     private static final String[] CRITERIA_REGEXES = new String[]{"groupQuery", "targetTable", "totalsTable", "aggregateJoinTable", "aggregateJoin", "aggregateCondition", "valueExpression", "useAggregatedValue"};
     private static final String[] STRATA_REGEXES = new String[]{"strataQuery", "targetTable", "strataCohortTable", "eventsTable"};
 
@@ -87,6 +89,8 @@ public class CCQueryBuilder {
 
     private final CohortCharacterization cohortCharacterization;
     private final String cohortTable;
+    // One row (earliest entry) per cohort/person derived from cohortTable; all analyses read from this table
+    private final String analysisCohortTable;
     private final String sessionId;
     private final boolean includeAnnual;
     private final boolean includeTemporal;
@@ -113,28 +117,42 @@ public class CCQueryBuilder {
         this.queryBuilder = new CohortExpressionQueryBuilder();
         this.includeAnnual = includeAnnual;
         this.includeTemporal = includeTemporal;
+        this.analysisCohortTable = String.format("%s.cf_%s", tempSchema, sessionId);
     }
 
     public String build() {
-        return cohortCharacterization.getCohorts()
-                .stream()
-                .map(def -> getAnalysisQueriesOnCohort(def.getId()))
-                .flatMap(Collection::stream)
+        List<Integer> cohortIds = cohortCharacterization.getCohorts().stream()
+                .map(def -> def.getId())
+                .collect(Collectors.toList());
+        if (cohortIds.isEmpty()) {
+            return "";
+        }
+        List<String> queries = new ArrayList<>(getEarliestEntryQueries(cohortIds));
+        cohortIds.forEach(id -> queries.addAll(getAnalysisQueriesOnCohort(id)));
+        queries.addAll(prepareStatements("DROP TABLE " + analysisCohortTable + ";", sessionId));
+        return queries.stream()
                 .map(COMPLETE_DOTCOMMA)
                 .collect(Collectors.joining("\n"));
+    }
+
+    private Collection<String> getEarliestEntryQueries(List<Integer> cohortIds) {
+        String ids = cohortIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        return prepareStatements(EARLIEST_ENTRY_QUERY, sessionId,
+                new String[]{"earliestEntryTable", "cohortTable", "cohortIds"},
+                new String[]{analysisCohortTable, cohortTable, ids});
     }
 
     private List<String> getAnalysisQueriesOnCohort(final Integer cohortDefinitionId) {
 
         final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinitionId);
         List<String> queries = new LinkedList<>();
-        queries.addAll(getSqlQueriesToRun(createFeJsonObject(options, cohortTable), cohortDefinitionId));
+        queries.addAll(getSqlQueriesToRun(createFeJsonObject(options, analysisCohortTable), cohortDefinitionId));
         if (includeTemporal) {
-            JSONObject temporalJsonObject = createFeJsonObject(createDefaultOptions(cohortDefinitionId), cohortTable, includeTemporal, false);
+            JSONObject temporalJsonObject = createFeJsonObject(createDefaultOptions(cohortDefinitionId), analysisCohortTable, includeTemporal, false);
             queries.addAll(getSqlQueriesToRun(temporalJsonObject, cohortDefinitionId));
         }
         if (includeAnnual) {
-            JSONObject temporalJsonObject = createFeJsonObject(createDefaultOptions(cohortDefinitionId), cohortTable, false, includeAnnual);
+            JSONObject temporalJsonObject = createFeJsonObject(createDefaultOptions(cohortDefinitionId), analysisCohortTable, false, includeAnnual);
             queries.addAll(getSqlQueriesToRun(temporalJsonObject, cohortDefinitionId));
         }
         return queries;
@@ -142,7 +160,7 @@ public class CCQueryBuilder {
 
     private String renderCustomAnalysisDesign(FeatureAnalysis fa, Integer cohortId, CohortCharacterizationStrata strata) {
 
-        String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(this.cohortTable);
+        String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(this.analysisCohortTable);
         Map<String, String> params = cohortCharacterization.getParameters().stream().collect(Collectors.toMap(CohortCharacterizationParam::getName, v -> v.getValue().toString()));
         params.put("cdm_database_schema", cdmSchema);
         params.put("cohort_table", cohortTable);
@@ -193,7 +211,7 @@ public class CCQueryBuilder {
         List<String> queries = new ArrayList<>();
         List<FeatureAnalysisWithCriteria<? extends BaseCriteriaFeature, Integer>> analysesWithCriteria = getFeAnalysesWithCriteria();
         if (!analysesWithCriteria.isEmpty()) {
-            String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(this.cohortTable);
+            String cohortTable = Optional.ofNullable(strata).map(this::getStrataCohortTable).orElse(this.analysisCohortTable);
             analysesWithCriteria.stream()
                     .map(analysis -> getCriteriaFeaturesQueries(cohortDefinitionId, analysis, cohortTable, strata))
                     .flatMap(Collection::stream)
@@ -327,7 +345,9 @@ public class CCQueryBuilder {
                 getMissingMeansZero(feature) ? "1" : "0");
         String aggregateJoinTable = getAggregateJoinTable(feature);
         String valueExpression = getValueExpression(feature);
-        String[] criteriaValues = new String[]{groupQuery, targetTable, cohortTable, aggregateJoinTable, getAggregateJoin(feature), getAggregateCondition(feature), valueExpression,
+        // totalsTable is the denominator; within a subgroup it must be the subgroup's
+        // cohort table so percentages match the preset (FeatureExtraction) analyses.
+        String[] criteriaValues = new String[]{groupQuery, targetTable, targetTable, aggregateJoinTable, getAggregateJoin(feature), getAggregateCondition(feature), valueExpression,
                 String.valueOf(useAggregatedValue(feature))};
         queryFile = StringUtils.replace(queryFile, "@missingMeansZeroQuery", getMissingMeansZero(feature) ? MISSING_MEANS_ZERO_QUERY : "");
         return Arrays.stream(SqlSplit.splitSql(queryFile))
@@ -459,7 +479,7 @@ public class CCQueryBuilder {
         strataQuery = SqlRender.renderSql(strataQuery, ArrayUtils.addAll(DAIMONS, "indexId"),
                 new String[]{resultsSchema, cdmSchema, tempSchema, vocabularySchema, "0"});
         String[] paramNames = STRATA_PARAM_NAMES.toArray(new String[0]);
-        String[] replacements = new String[]{strataQuery, cohortTable, getStrataCohortTable(strata), eventsTable};
+        String[] replacements = new String[]{strataQuery, analysisCohortTable, getStrataCohortTable(strata), eventsTable};
         String[] paramValues = new String[]{String.valueOf(cohortDefinitionId), String.valueOf(strata.getId())};
         queries.addAll(prepareStatements("CREATE TABLE " + getStrataCohortTable(strata)
                 + "(cohort_definition_id INTEGER, strata_id BIGINT, subject_id BIGINT, cohort_start_date DATE, cohort_end_date DATE);", sessionId));
