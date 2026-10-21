@@ -131,6 +131,29 @@ public class Characterization_5_0_Test extends AbstractDatabaseTest {
   }
 
   @Test
+  public void cleanupSqlDropsIntermediateTables() throws Exception {
+    final String SCHEMA = "cc_cleanup"; // this must be all lower case for DBUnit to work
+    prepareSchema(SCHEMA, RESULTS_DDL_PATH);
+
+    // design has one strata (id 1)
+    String characterizationDesign = ResourceHelper.GetResourceAsString("/cohortcharacterization/criteriaPrevalenceStrataTest.json");
+    CCQueryBuilder builder = new CCQueryBuilder(characterizationDesign, SCHEMA + ".cohort", "SID", CDM_SCHEMA, SCHEMA, CDM_SCHEMA, SCHEMA, 1);
+
+    // simulate tables left behind by a failed or cancelled run
+    jdbcTemplate.execute("CREATE TABLE " + SCHEMA + ".cf_sid (subject_id BIGINT)");
+    jdbcTemplate.execute("CREATE TABLE " + SCHEMA + ".sc_sid_1 (subject_id BIGINT)");
+
+    String cleanupSql = SqlTranslate.translateSql(builder.getCleanupSql(), "postgresql");
+    jdbcTemplate.batchUpdate(SqlSplit.splitSql(cleanupSql));
+    // guarded drops: running again when nothing exists must not fail
+    jdbcTemplate.batchUpdate(SqlSplit.splitSql(cleanupSql));
+
+    Assert.assertEquals(Integer.valueOf(0),
+            jdbcTemplate.queryForObject("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '"
+                    + SCHEMA + "' AND table_name IN ('cf_sid', 'sc_sid_1')", Integer.class));
+  }
+
+  @Test
   public void criteriaPrevalenceStrataTest() throws Exception {
     final String RESULTS_SCHEMA = "criteria_prevalence_strata"; // this must be all lower case for DBUnit to work
     final String[] testDataSetsPrep = new String[] { 

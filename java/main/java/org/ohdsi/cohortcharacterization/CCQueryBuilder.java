@@ -142,6 +142,19 @@ public class CCQueryBuilder {
                 new String[]{analysisCohortTable, cohortTable, ids});
     }
 
+    /**
+     * SQL that drops the intermediate tables {@link #build()} creates in the temp schema
+     * (earliest-entry cohort table and per-strata cohort tables). Each drop is guarded, so it is safe
+     * to run after a successful, failed or cancelled execution.
+     */
+    public String getCleanupSql() {
+        return Stream.concat(
+                        Stream.of(analysisCohortTable),
+                        cohortCharacterization.getStratas().stream().map(this::getStrataCohortTable))
+                .map(table -> String.format("IF OBJECT_ID('%1$s', 'U') IS NOT NULL DROP TABLE %1$s;", table))
+                .collect(Collectors.joining("\n"));
+    }
+
     private List<String> getAnalysisQueriesOnCohort(final Integer cohortDefinitionId) {
 
         final CohortExpressionQueryBuilder.BuildExpressionQueryOptions options = createDefaultOptions(cohortDefinitionId);
