@@ -581,10 +581,13 @@ public class CCQueryBuilder {
                 JSONArray startDate = timePeriod.getJSONArray("start_day");
                 JSONArray endDate = timePeriod.getJSONArray("end_day");
                 List<String> sqlValues = new ArrayList<>();
-                for (int i = 0; i < timeId.length() - 1; i++) {
-                    sqlValues.add(MessageFormat.format("({0}, {1}, {2})", timeId.get(i), startDate.get(i), endDate.get(i)));
+                // Use INSERT ... SELECT ... UNION ALL rather than a multi-row VALUES list: SqlRender's
+                // Spark/Databricks insert rewrite (BigQuerySparkTranslate.sparkHandleInsert) mangles negative
+                // literals and drops all but the first row of a multi-row VALUES clause.
+                for (int i = 0; i < timeId.length(); i++) {
+                    sqlValues.add(String.format("SELECT %s AS time_id, %s AS start_day, %s AS end_day", timeId.get(i), startDate.get(i), endDate.get(i)));
                 }
-                return Arrays.stream(SqlSplit.splitSql(SqlRender.renderSql(TIME_PERIOD_QUERY, new String[]{"values"}, new String[]{String.join(", \n", sqlValues)})));
+                return Arrays.stream(SqlSplit.splitSql(SqlRender.renderSql(TIME_PERIOD_QUERY, new String[]{"values"}, new String[]{String.join("\nUNION ALL ", sqlValues)})));
             }
         }
         return Stream.of();
