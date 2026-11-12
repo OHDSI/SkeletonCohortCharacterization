@@ -6,4 +6,5 @@ CREATE TABLE #time_period(
     end_day int
 );
 
-INSERT INTO #time_period(time_id, start_day, end_day) VALUES @values;
+INSERT INTO #time_period(time_id, start_day, end_day)
+@values;
